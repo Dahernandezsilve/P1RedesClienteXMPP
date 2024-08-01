@@ -13,6 +13,7 @@
   "dependencies": {
     "@xmpp/client": "^0.13.1",
     "@xmpp/debug": "^0.13.0",
+    "@xmpp/starttls": "^0.13.1",
     "process": "^0.11.10",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
