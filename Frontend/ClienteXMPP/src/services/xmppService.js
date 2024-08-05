@@ -1,76 +1,62 @@
-import { client, xml, jid } from '@xmpp/client';
-import { Buffer } from 'buffer';
-import process from "process"; 
+// src/services/xmppService.js
 
-const initXmpp = function (xmpp) {
-  xmpp.on('error', (err) => {
-    console.error("Error occurred", err.toString());
-  });
+const WS_URL = 'ws://localhost:8000/ws'; // URL de tu servidor FastAPI WebSocket
 
-  xmpp.on('offline', () => {
-    console.log('🛈', 'offline');
-  });
+let socket;
 
-  xmpp.on('online', async (address) => {
-    console.log("Online as:", address.toString());
-    // Send initial presence
-    await xmpp.send(xml('presence'));
+export const connectXmpp = (username, password) => {
+    return new Promise((resolve, reject) => {
+        // Crear una conexión WebSocket con el nombre de usuario y la contraseña
+        socket = new WebSocket(`${WS_URL}/${username}/${password}`);
 
-    // Keep-alive mechanism
-    setInterval(async () => {
-      console.log('Sending keep-alive presence');
-      await xmpp.send(xml('presence'));
-    }, 30000); // Every 30 seconds
-  });
+        // Manejar eventos WebSocket
+        socket.onopen = () => {
+            console.log('WebSocket connection opened');
+            resolve();
+        };
 
-  xmpp.on('stanza', (stanza) => {
-    console.log('⮈', stanza.toString());
-    // Handle stanzas if needed
-  });
+        socket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            // Manejar el mensaje recibido aquí
+            console.log('Message from server:', message);
+        };
 
-  xmpp.on('status', (status) => {
-    console.log('🛈', 'status:', status);
-  });
+        socket.onclose = () => {
+            console.log('WebSocket connection closed');
+        };
 
-  process.on('unhandledRejection', function (reason, p) {
-    console.error('Possibly Unhandled Rejection at: Promise ', p, ' reason: ', reason);
-  });
-
-  try {
-    xmpp.start();
-  } catch (e) {
-    console.error(e.message);
-  }
-};
-
-const connectXmpp = async () => {
-  try {
-    const clientInstance = new client({
-      service: "xmpp://alumchat.lol:5222",
-      domain: "alumchat.lol",
-      username: "her21270-test1",
-      password: "1234",
-      tlsOptions: {
-        rejectUnauthorized: false
-      }
+        socket.onerror = (error) => {
+            reject('WebSocket error: ' + error.message);
+        };
     });
-
-    initXmpp(clientInstance);
-  } catch (e) {
-    console.error(e);
-    setTimeout(connectXmpp, 5000); // Retry connection after 5 seconds
-  }
 };
 
-const disconnectXmpp = async (xmpp) => {
-  try {
-    await xmpp.stop();
-    console.log("Disconnected");
-  } catch (e) {
-    console.error("Failed to disconnect", e);
-  }
+const WS_URL2 = 'ws://localhost:8000'; // URL de tu servidor FastAPI WebSocket
+
+export const registerUser = (username, password) => {
+    return new Promise((resolve, reject) => {
+        const registerSocket = new WebSocket(`${WS_URL2}/register`);
+
+        registerSocket.onopen = () => {
+            const registerMessage = { username, password };
+            registerSocket.send(JSON.stringify(registerMessage));
+        };
+
+        registerSocket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            if (message.status === 'error') {
+                reject(message.message);
+            } else {
+                resolve(message.message); // Resolviendo con el mensaje de éxito
+            }
+        };
+
+        registerSocket.onclose = () => {
+            console.log('WebSocket registration connection closed');
+        };
+
+        registerSocket.onerror = (error) => {
+            reject('WebSocket error: ' + error.message);
+        };
+    });
 };
-
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
-export { connectXmpp, disconnectXmpp };

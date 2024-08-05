@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { disconnectXmpp } from '@services/xmppService';
 import './Chat.css';
 
 const Chat = ({ user }) => {
@@ -11,7 +10,6 @@ const Chat = ({ user }) => {
   };
 
   const handleLogout = async () => {
-    await disconnectXmpp();
     window.location.reload();
   };
 
