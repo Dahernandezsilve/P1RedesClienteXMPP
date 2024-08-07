@@ -1,3 +1,72 @@
+/* Asegúrate de que el fondo cubra toda la pantalla */
+
 .chat-container {
-    padding: 20px;
-  }
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  background-color: #f0f0f0; /* Fondo claro para el estilo de Lego */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  padding-left: 2vw;
+  padding-right: 2vw;
+  background-color: #ffcc00; /* Color amarillo Lego */
+  border-bottom: 2px solid #cc9900; /* Borde más oscuro */
+  color: #f0f0f0;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  background-color: #fff;
+}
+
+.chat-message {
+  margin-bottom: 10px;
+}
+
+.sent {
+  text-align: right;
+}
+
+.received {
+  text-align: left;
+}
+
+.chat-inputs {
+  display: flex;
+  padding: 10px;
+  background-color: #ffcc00; 
+  border-top: 2px solid #cc9900; 
+}
+
+.lego-input {
+  flex: 1;
+  margin-right: 10px;
+  padding: 8px;
+  border: 2px solid #cc9900;
+  border-radius: 5px;
+}
+
+.lego-button {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #cc9900;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.lego-button:hover {
+  background-color: #b38a00;
+}

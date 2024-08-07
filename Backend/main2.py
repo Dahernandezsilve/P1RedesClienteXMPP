@@ -29,13 +29,18 @@ async def send_messages(websocket: WebSocket):
 async def websocket_endpoint(websocket: WebSocket, username: str, password: str):
     await websocket.accept()
     
-    xmpp_client = XMPPClient('alumchat.lol', 5222, username, password, 'test')
-    xmpp_client.connect()
-    
-    clients[username] = xmpp_client
+    account_manager = AccountManager('alumchat.lol', 5222)
+    try:
+        account_manager.login(username, password)
+    except Exception as e:
+        error_message = {"status": "error", "message": "Login failed. Please check your credentials"}
+        await websocket.send_text(json.dumps(error_message))
+        await websocket.close()
+        return
 
-    # Crear hilos para escuchar y enviar mensajes
-    listener_thread = threading.Thread(target=lambda: asyncio.run(listen_for_messages(websocket, xmpp_client)))
+    clients[username] = account_manager.client
+
+    listener_thread = threading.Thread(target=lambda: asyncio.run(listen_for_messages(websocket, account_manager.client)))
     listener_thread.start()
 
     try:
@@ -43,8 +48,9 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
     except WebSocketDisconnect:
         pass
     finally:
-        xmpp_client.disconnect()
+        account_manager.logout()
         del clients[username]
+
 
 @app.websocket("/register")
 async def register_user(websocket: WebSocket):

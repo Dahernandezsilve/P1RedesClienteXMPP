@@ -1,31 +1,30 @@
 // src/services/xmppService.js
 
-const WS_URL = 'ws://localhost:8000/ws'; // URL de tu servidor FastAPI WebSocket
+const WS_URL = 'ws://localhost:8000'; // URL de tu servidor FastAPI WebSocket
 
-let socket;
 
 export const connectXmpp = (username, password) => {
     return new Promise((resolve, reject) => {
-        // Crear una conexión WebSocket con el nombre de usuario y la contraseña
-        socket = new WebSocket(`${WS_URL}/${username}/${password}`);
+        const loginSocket = new WebSocket(`${WS_URL}/ws/${username}/${password}`);
 
-        // Manejar eventos WebSocket
-        socket.onopen = () => {
-            console.log('WebSocket connection opened');
-            resolve();
+        loginSocket.onopen = () => {
+            console.log('WebSocket login connection opened');
         };
 
-        socket.onmessage = (event) => {
+        loginSocket.onmessage = (event) => {
             const message = JSON.parse(event.data);
-            // Manejar el mensaje recibido aquí
-            console.log('Message from server:', message);
+            if (message.status === 'error') {
+                reject(message.message);  // Rechazar con el mensaje de error específico
+            } else {
+                resolve(message.message); // Resolviendo con el mensaje de éxito
+            }
         };
 
-        socket.onclose = () => {
-            console.log('WebSocket connection closed');
+        loginSocket.onclose = () => {
+            console.log('WebSocket login connection closed');
         };
 
-        socket.onerror = (error) => {
+        loginSocket.onerror = (error) => {
             reject('WebSocket error: ' + error.message);
         };
     });

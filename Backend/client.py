@@ -30,8 +30,7 @@ class XMPPClient:
         self.receive()
 
     def connect(self) -> None:
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((self.server, self.port))
+        self.connect_without_auth()
         
         auth_str = f"\0{self.username}\0{self.password}"
         auth_b64 = encode_base64(auth_str)
@@ -56,18 +55,11 @@ class XMPPClient:
         self.sock.sendall(data.encode('utf-8'))
 
     def receive(self) -> str:
-        try:
-            self.sock.settimeout(5)
-            data = self.sock.recv(4096).decode('utf-8')
-            log_message("Received", data)
-            return data
-        except socket.timeout:
-            log_message("Timeout: No response from the server.", 'Timeout')
-            return ""  # O lanzar una excepción según prefieras
-        except Exception as e:
-            log_message(f"Error receiving data: {e}")
-            return ""
-
+        #self.sock.settimeout(5)
+        data = self.sock.recv(4096).decode('utf-8')
+        log_message("Received", data)
+        return data
+    
     def send_message(self, to: str, body: str) -> None:
         self.send(f"<message to='{to}' type='chat'><body>{body}</body></message>")
         self.receive()
