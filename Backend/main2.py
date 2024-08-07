@@ -2,6 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from client import XMPPClient
 from accountManager import AccountManager
 from utils import xml_to_json
+from communicationManager import CommunicationManager  # Asegúrate de importar esto
 import threading
 import asyncio
 import json
@@ -13,17 +14,27 @@ clients = {}
 
 async def listen_for_messages(websocket: WebSocket, xmpp_client: XMPPClient):
     while True:
-        message = xmpp_client.receive()
+        print("hola")
+        message = xmpp_client.receive()  # Método que debe recibir el mensaje desde XMPP
+        print("hola2", message)
         if message:
+            print(f"Received XMPP Message: {message}")  # Log para ver qué mensajes se reciben
             json_message = xml_to_json(message)
-            print(f"Sending JSON: {json_message}") 
-            await websocket.send_text(json_message)
+            if json_message:  # Verifica si la conversión fue exitosa
+                print(f"Sending JSON: {json_message}") 
+                await websocket.send_text(json_message)
+        await asyncio.sleep(1)  # Evitar un ciclo de CPU intenso
 
-async def send_messages(websocket: WebSocket):
+
+async def send_messages(websocket: WebSocket, comm_manager: CommunicationManager):
     while True:
         data = await websocket.receive_text()
-        # Aquí puedes agregar la lógica para enviar mensajes a través de XMPP
-        await websocket.send_text(f"Message sent: {data}")
+        message = json.loads(data)
+        to = message["to"]
+        body = message["body"]
+        comm_manager.send_message(to, body)
+        response = {"status": "success", "message": f"Message sent to {to}"}
+        await websocket.send_text(json.dumps(response))
 
 @app.websocket("/ws/{username}/{password}")
 async def websocket_endpoint(websocket: WebSocket, username: str, password: str):
@@ -39,33 +50,30 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
         return
 
     clients[username] = account_manager.client
+    comm_manager = CommunicationManager(account_manager.client)
 
-    listener_thread = threading.Thread(target=lambda: asyncio.run(listen_for_messages(websocket, account_manager.client)))
-    listener_thread.start()
+    asyncio.create_task(listen_for_messages(websocket, account_manager.client))
 
     try:
-        await send_messages(websocket)
+        await send_messages(websocket, comm_manager)
     except WebSocketDisconnect:
         pass
     finally:
         account_manager.logout()
         del clients[username]
 
-
 @app.websocket("/register")
 async def register_user(websocket: WebSocket):
     await websocket.accept()
     try:
         data = await websocket.receive_text()
-        message = json.loads(data)  # Suponiendo que el mensaje se envía como JSON
+        message = json.loads(data)
         username = message["username"]
         password = message["password"]
 
         account_manager = AccountManager('alumchat.lol', 5222)
 
         # Registro de cuenta
-        # new_username = 'her21270-test2'
-        # new_password = '1234'
         account_manager.register_account(username, password)
         
         # Iniciar sesión con la nueva cuenta

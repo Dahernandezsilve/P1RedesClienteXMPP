@@ -55,14 +55,38 @@ class XMPPClient:
         self.sock.sendall(data.encode('utf-8'))
 
     def receive(self) -> str:
-        #self.sock.settimeout(5)
-        data = self.sock.recv(4096).decode('utf-8')
+        data = ""
+        buffer_size = 4096  # Tamaño inicial del búfer
+        self.sock.settimeout(1)  # Establecer un tiempo de espera de 1 segundo
+
+        while True:
+            try:
+                print("Receiving data...")
+                chunk = self.sock.recv(buffer_size).decode('utf-8')
+                if not chunk:
+                    break  # Salir si no hay más datos
+                data += chunk  # Acumular datos
+
+                # Aumentar el tamaño del búfer si es necesario
+                if len(chunk) == buffer_size:
+                    buffer_size *= 2  # Duplicar el tamaño del búfer
+                    print(f"Increasing buffer size to: {buffer_size}")
+
+            except socket.timeout:
+                print("Timeout: No se recibieron datos.")
+                break
+            except Exception as e:
+                print(f"Error al recibir datos: {e}")
+                break
+
         log_message("Received", data)
         return data
+
+
     
     def send_message(self, to: str, body: str) -> None:
         self.send(f"<message to='{to}' type='chat'><body>{body}</body></message>")
-        self.receive()
+#        self.receive()
 
     def disconnect(self) -> None:
         if self.sock:

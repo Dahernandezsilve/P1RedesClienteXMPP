@@ -22,6 +22,10 @@ class AccountManager:
         self.client.password = password
         self.client.connect()
 
+        # Send presence to server
+        self.client.send("<presence/>")
+        
+
     def logout(self) -> None:
         self.client.disconnect()
 

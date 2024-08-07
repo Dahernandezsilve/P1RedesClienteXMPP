@@ -13,16 +13,17 @@ def xml_to_json(xml_string: str) -> str:
         str: Cadena JSON resultante.
     """
     try:
-        # Convertir XML a diccionario
-        dict_data = xmltodict.parse(xml_string)
-        
-        # Convertir diccionario a JSON
+        # Añadir un elemento raíz si no existe
+        wrapped_xml = f"<root>{xml_string}</root>"
+        dict_data = xmltodict.parse(wrapped_xml, force_list=True)
         json_data = json.dumps(dict_data)
-        
+
+        print(f"Converted XML to JSON: {json_data}")
         return json_data
     except Exception as e:
         print(f"Error converting XML to JSON: {e}")
         return {}
+
 
 def encode_base64(data: str) -> str:
     """Encode a string to base64."""

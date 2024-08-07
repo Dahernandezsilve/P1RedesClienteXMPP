@@ -23,10 +23,11 @@
 }
 
 .chat-messages {
+  display: flex;
+  flex-direction: column; /* Asegúrate de que los mensajes estén en columna */
   flex: 1;
   padding: 10px;
   overflow-y: auto;
-
 }
 
 .chat-message {
@@ -35,10 +36,14 @@
 
 .sent {
   text-align: right;
+  background-color: #007bff; /* Color de fondo para mensajes enviados */
+  margin-left: auto; /* Empuja el mensaje a la derecha */
 }
 
 .received {
   text-align: left;
+  background-color: #28a745; /* Color de fondo para mensajes recibidos */
+  margin-right: auto; /* Empuja el mensaje a la izquierda */
 }
 
 .chat-inputs {

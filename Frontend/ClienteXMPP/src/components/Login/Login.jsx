@@ -3,7 +3,7 @@ import { connectXmpp, registerUser } from '@services/xmppService';
 import Loader from '@components/Loader';
 import './Login.css';
 
-const Login = ({ setUser }) => {
+const Login = ({ setUser, setMessages }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -14,7 +14,7 @@ const Login = ({ setUser }) => {
   const handleLogin = async () => {
     setIsLoading(true);
     try {
-      await connectXmpp(username, password);
+      await connectXmpp(username, password, setMessages);
       setUser(username);
       setError('');
     } catch (err) {

@@ -1,4 +1,5 @@
 from accountManager import AccountManager
+from communicationManager import CommunicationManager
 
 def main():
     server = 'alumchat.lol'
@@ -12,7 +13,9 @@ def main():
     # account_manager.register_account(new_username, new_password)
     
     # Iniciar sesión con la nueva cuenta
-    account_manager.login('her21270-test2', '1234wewqeq')
+    account_manager.login('her21270-test1', '1234')
+    comm_manager = CommunicationManager(account_manager.client)
+    comm_manager.send_message('jim21169-test@alumchat.lol', 'Hola, ¿cómo estás?')
     
     # Aquí podrías agregar funcionalidades de comunicación si fuera necesario
     

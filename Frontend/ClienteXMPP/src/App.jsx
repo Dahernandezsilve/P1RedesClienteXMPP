@@ -4,13 +4,14 @@ import Login from '@components/Login';
 
 const App = () => {
   const [user, setUser] = useState(null);
+  const [messages, setMessages] = useState([]);
 
   return (
     <div>
       {user ? (
-        <Chat user={user} />
+        <Chat user={user} messages={messages} />
       ) : (
-        <Login setUser={setUser} />
+        <Login setUser={setUser} setMessages={setMessages} />
       )}
     </div>
   );
