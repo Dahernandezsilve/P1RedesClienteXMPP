@@ -1,0 +1,30 @@
+.container {
+    color: white;
+    font-size: 7px;
+    background: transparent;
+    padding: 20.5px;
+    padding-right: 0px;
+    padding-left: 30px;
+}
+
+.scramble-text {
+    font-size: 2em;
+    display: inline-block;
+    overflow: hidden;
+    margin-left: 6vw;
+    margin-top: 4vh;
+    white-space: nowrap;
+    border-bottom: 0.15em solid white;    
+    border-right: 0.15em solid white;
+    box-sizing: border-box; /* Incluye el borde dentro del tamaño del elemento */
+    animation: scramble 5s steps(10, end) infinite; /* Repite la animación infinitamente */
+}
+
+@keyframes scramble {
+    0% {
+        width: 0;
+    }
+    100% {
+        width: 60%;
+    }
+}

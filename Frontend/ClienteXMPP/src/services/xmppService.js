@@ -18,17 +18,18 @@ export const connectXmpp = (username, password, setMessages) => {
             const message = JSON.parse(event.data);
             console.log('Message:', message);
 
-            // Verifica que root sea un array y no esté vacío
-            if (Array.isArray(message.root) && message.root.length > 0) {
+            if (message.status === 'failure') {
+                console.error('Login failed:', message.reason);
+                loginSocket.close(); // Cierra la conexión si el login falla
+                reject('Login failed: ' + message.reason);
+            } else if (Array.isArray(message.root) && message.root.length > 0) {
                 message.root.forEach((rootItem) => {
-                    // Asegúrate de que el objeto tiene el campo message
                     if (Array.isArray(rootItem.message)) {
                         rootItem.message.forEach((msg) => {
-                            // Verifica que el cuerpo existe y es un array
                             if (msg.body && Array.isArray(msg.body) && msg.body.length > 0) {
                                 const newMessage = {
                                     sender: msg['@from'],
-                                    text: msg.body[0] // Accede al primer elemento del array
+                                    text: msg.body[0]
                                 };
                                 setMessages((messages) => [...messages, newMessage]);
                             }
@@ -36,7 +37,6 @@ export const connectXmpp = (username, password, setMessages) => {
                     }
                 });
             } else {
-                // Manejo de caso donde no se recibe un mensaje válido
                 console.warn('No valid messages received');
             }
         };
@@ -50,6 +50,7 @@ export const connectXmpp = (username, password, setMessages) => {
         };
     });
 };
+
 
 export const sendMessage = (to, body) => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {

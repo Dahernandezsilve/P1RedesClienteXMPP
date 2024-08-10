@@ -1,0 +1,45 @@
+.slidebar {
+  width: 26vw;
+  height: 100%;
+  position: fixed; /* Mantener la barra lateral fija */
+  background: linear-gradient(120deg,  #000000, #ff2600,  #000000);
+  background-size: 300% 300%;
+  transition: background-position 1s ease;
+  border-right: 2px solid #000000;
+
+}
+
+.slidebar:hover {
+  background-position: 100% 100%;
+}
+
+.slidebar h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.slidebar ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.slidebar ul li {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.3s;
+}
+
+.slidebar ul li:hover {
+  background-color: #000000;
+}
+
+.profile-image {
+  width: 3vw; /* Ajustar el tamaño de la imagen */
+  height: 6vh;
+  border-radius: 10px;
+  margin-left: 17px;
+  margin-right: 10px; /* Espacio entre la imagen y el texto */
+}

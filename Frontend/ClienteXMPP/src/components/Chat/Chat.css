@@ -5,7 +5,6 @@
   flex-direction: column;
   height: 100vh;
   width: 100%;
-  
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   border-radius: 10px;
 }
@@ -14,52 +13,84 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  padding-left: 2vw;
+  padding-left: 1vw;
   padding-right: 2vw;
-  background: linear-gradient(135deg, #ffcc00, #ff5733); 
-  border-bottom: 2px solid #cc9900; /* Borde más oscuro */
-  color: #f0f0f0;
+  background: linear-gradient(201deg, #000000, #ff2600,  #000000);
+  background-size: 300% 300%;
+  transition: background-position 1s ease;
+  border-bottom: 2px solid #000000;
+}
+
+.chat-header:hover {
+  background-position: 100% 100%;
+}
+
+.chat-header h2 {
+  color: white;
+	padding: 10px;
+
+}
+
+.chat-content {
+  padding-top: 0px;
+  padding-right: 0px;
+  padding-bottom: 0px;
+  width: 74vw;
+  margin-left: 26vw;
 }
 
 .chat-messages {
   display: flex;
   flex-direction: column; /* Asegúrate de que los mensajes estén en columna */
   flex: 1;
+  height: 81vh;
   padding: 10px;
   overflow-y: auto;
+  background: url('/background.gif');
+  background-size: cover;
 }
 
-.chat-message {
-  margin-bottom: 10px;
-}
 
 .sent {
   text-align: right;
-  background-color: #007bff; /* Color de fondo para mensajes enviados */
+  padding: 10px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  background-color: #000000; /* Color de fondo para mensajes enviados */
   margin-left: auto; /* Empuja el mensaje a la derecha */
 }
 
 .received {
   text-align: left;
-  background-color: #28a745; /* Color de fondo para mensajes recibidos */
+  padding: 10px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  background-color: #525252; /* Color de fondo para mensajes recibidos */
   margin-right: auto; /* Empuja el mensaje a la izquierda */
 }
 
 .chat-inputs {
   display: flex;
   padding: 10px;
-  background: linear-gradient(135deg, #ffcc00, #ff5733);  
-  border-top: 2px solid #cc9900; 
+  background: linear-gradient(201deg, #000000, #ff2600,  #000000);
+  background-size: 300% 300%;
+  transition: background-position 1s ease;
+  border-top: 2px solid #000000;
 }
+
+.chat-inputs:hover {
+  background-position: 100% 100%;
+}
+
 
 .lego-input {
   flex: 1;
   margin-right: 10px;
   padding: 8px;
-  border: 2px solid #cc9900;
+  border: 2px solid #000000;
   border-radius: 5px;
 }
+
 
 .lego-button {
   padding: 10px;
