@@ -61,7 +61,7 @@ const Chat = ({ user, messages, contacts}) => {
           <input
             type="text"
             placeholder="Recipient"
-            value={recipient.name}
+            value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
             className="lego-input"
           />

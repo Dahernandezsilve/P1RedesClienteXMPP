@@ -3,6 +3,7 @@ import ssl
 from typing import Optional
 from utils import encode_base64, log_message
 import config
+import time
 
 class XMPPClient:
     def __init__(self, server: str = config.SERVER, port: int = config.PORT, 
@@ -92,7 +93,9 @@ class XMPPClient:
     
     def send_message(self, to: str, body: str) -> None:
         self.send(f"<message to='{to}' type='chat'><body>{body}</body></message>")
-#        self.receive()
+        time.sleep(1)
+        infor = self.receive()
+        print('testeando', infor)
 
     def disconnect(self) -> None:
         if self.sock:

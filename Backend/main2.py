@@ -32,11 +32,12 @@ async def listen_for_messages(websocket: WebSocket, xmpp_client: XMPPClient):
 async def send_messages(websocket: WebSocket, comm_manager: CommunicationManager):
     while True:
         try:
+            print("hola3")
             data = await websocket.receive_text()
             message = json.loads(data)
             to = message["to"]
             body = message["body"]
-            comm_manager.send_message(to, body)
+            print('hola', comm_manager.send_message(to, body))
             response = {"status": "success", "message": f"Message sent to {to}"}
             await websocket.send_text(json.dumps(response))
         except Exception as e:

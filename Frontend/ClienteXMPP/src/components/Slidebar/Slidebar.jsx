@@ -10,7 +10,7 @@ const Slidebar = ({ contacts, onSelectContact }) => {
       <Header />
       <ul>
         {contacts.map((contact, index) => (
-          <li key={index} onClick={() => onSelectContact(contact)}>
+          <li key={index} onClick={() => onSelectContact(contact.jid)}>
             <img 
               src={contact.profileImage || defaultProfileImage} 
               alt={`${contact.jid} profile`} 
