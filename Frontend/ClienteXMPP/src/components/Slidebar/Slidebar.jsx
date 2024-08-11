@@ -2,7 +2,7 @@ import React from 'react';
 import './Slidebar.css';
 import Header from '@components/Header';
 
-const defaultProfileImage = 'https://via.placeholder.com/150/CCCCCC/000000?Text=DefaultImage';
+const defaultProfileImage = './usuario.png';
 
 const Slidebar = ({ contacts, onSelectContact }) => {
   return (
@@ -13,10 +13,10 @@ const Slidebar = ({ contacts, onSelectContact }) => {
           <li key={index} onClick={() => onSelectContact(contact)}>
             <img 
               src={contact.profileImage || defaultProfileImage} 
-              alt={`${contact.name} profile`} 
+              alt={`${contact.jid} profile`} 
               className="profile-image" 
             />
-            {contact.name}
+            {contact.jid}
           </li>
         ))}
       </ul>

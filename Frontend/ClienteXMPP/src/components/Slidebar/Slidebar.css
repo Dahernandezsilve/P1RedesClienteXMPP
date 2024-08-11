@@ -37,9 +37,9 @@
 }
 
 .profile-image {
-  width: 3vw; /* Ajustar el tamaño de la imagen */
-  height: 6vh;
+  width: 2vw; /* Ajustar el tamaño de la imagen */
+  height: 4vh;
   border-radius: 10px;
   margin-left: 17px;
-  margin-right: 10px; /* Espacio entre la imagen y el texto */
+  margin-right: 1vw; /* Espacio entre la imagen y el texto */
 }

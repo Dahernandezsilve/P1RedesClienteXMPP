@@ -42,6 +42,7 @@ async def send_messages(websocket: WebSocket, comm_manager: CommunicationManager
         except Exception as e:
             print(f"Error in send_messages: {e}")
             break
+
 @app.websocket("/ws/{username}/{password}")
 async def websocket_endpoint(websocket: WebSocket, username: str, password: str):
     await websocket.accept()
@@ -57,6 +58,14 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
 
     clients[username] = account_manager.client
     comm_manager = CommunicationManager(account_manager.client)
+    try:
+        roster_response = comm_manager.show_users()  # Obtén la lista de usuarios
+        user_list = {"status": "success", "users": roster_response}  # Crea un diccionario con la lista
+        await websocket.send_text(json.dumps(user_list))  # Enviar la lista de usuarios como JSON
+    except Exception as e:
+        error_message = {"status": "error", "message": f"Failed to retrieve user list: {str(e)}"}
+        await websocket.send_text(json.dumps(error_message))
+    
 
     asyncio.create_task(listen_for_messages(websocket, account_manager.client))
 

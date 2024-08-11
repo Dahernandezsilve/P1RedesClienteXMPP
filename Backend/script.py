@@ -15,8 +15,9 @@ def main():
     # Iniciar sesión con la nueva cuenta
     account_manager.login('her21270-test1', '1234')
     comm_manager = CommunicationManager(account_manager.client)
-    comm_manager.send_message('jim21169-test@alumchat.lol', 'Hola, ¿cómo estás?')
-    
+    #comm_manager.send_message('jim21169-test@alumchat.lol', 'Hola, ¿cómo estás?')
+    print(comm_manager.show_users())
+
     # Aquí podrías agregar funcionalidades de comunicación si fuera necesario
     
     # Cerrar sesión

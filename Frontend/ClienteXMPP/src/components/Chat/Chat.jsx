@@ -3,30 +3,10 @@ import './Chat.css';
 import { sendMessage } from '@services/xmppService';
 import Slidebar from '@components/Slidebar'; // Importa el componente Slidebar
 
-const Chat = ({ user, messages }) => {
+const Chat = ({ user, messages, contacts}) => {
   const [message, setMessage] = useState('');
   const [recipient, setRecipient] = useState('');
   const [messageQueue, setMessageQueue] = useState([]);
-
-  const contacts = [
-    {
-      "name": "her21270-test1@alumchat.lol",
-      "profileImage": "https://via.placeholder.com/150/0000FF/808080?Text=JohnDoe"
-    },
-    {
-      "name": "her21270-test2@alumchat.lol",
-      "profileImage": ""
-    },
-    {
-      "name": "her21270-test3@alumchat.lol",
-      "profileImage": null
-    },
-    {
-      "name": "jim21169-test@alumchat.lol",
-      "profileImage": "https://via.placeholder.com/150/008000/FFFFFF?Text=BobBrown"
-    }
-  ]
-  
 
   const handleSend = () => {
     if (message.trim() && recipient.trim()) {

@@ -82,7 +82,13 @@ class XMPPClient:
         log_message("Received", data)
         return data
 
-
+    def get_roster(self) -> str:
+            """
+            Envía una solicitud para obtener el roster (lista de contactos) del usuario.
+            """
+            self.send("<iq type='get' id='roster_1'><query xmlns='jabber:iq:roster'/></iq>")
+            response = self.receive()
+            return response
     
     def send_message(self, to: str, body: str) -> None:
         self.send(f"<message to='{to}' type='chat'><body>{body}</body></message>")
