@@ -14,28 +14,34 @@ clients = {}
 
 async def listen_for_messages(websocket: WebSocket, xmpp_client: XMPPClient):
     while True:
-        print("hola")
-        message = xmpp_client.receive()  # Método que debe recibir el mensaje desde XMPP
-        print("hola2", message)
-        if message:
-            print(f"Received XMPP Message: {message}")  # Log para ver qué mensajes se reciben
-            json_message = xml_to_json(message)
-            if json_message:  # Verifica si la conversión fue exitosa
-                print(f"Sending JSON: {json_message}") 
-                await websocket.send_text(json_message)
-        await asyncio.sleep(1)  # Evitar un ciclo de CPU intenso
-
+        try:
+            print("hola")
+            message = xmpp_client.receive()  # Método que debe recibir el mensaje desde XMPP
+            print("hola2", message)
+            if message:
+                print(f"Received XMPP Message: {message}")  # Log para ver qué mensajes se reciben
+                json_message = xml_to_json(message)
+                if json_message:  # Verifica si la conversión fue exitosa
+                    print(f"Sending JSON: {json_message}") 
+                    await websocket.send_text(json_message)
+            await asyncio.sleep(1)  # Evitar un ciclo de CPU intenso
+        except Exception as e:
+            print(f"Error in listen_for_messages: {e}")
+            break
 
 async def send_messages(websocket: WebSocket, comm_manager: CommunicationManager):
     while True:
-        data = await websocket.receive_text()
-        message = json.loads(data)
-        to = message["to"]
-        body = message["body"]
-        comm_manager.send_message(to, body)
-        response = {"status": "success", "message": f"Message sent to {to}"}
-        await websocket.send_text(json.dumps(response))
-
+        try:
+            data = await websocket.receive_text()
+            message = json.loads(data)
+            to = message["to"]
+            body = message["body"]
+            comm_manager.send_message(to, body)
+            response = {"status": "success", "message": f"Message sent to {to}"}
+            await websocket.send_text(json.dumps(response))
+        except Exception as e:
+            print(f"Error in send_messages: {e}")
+            break
 @app.websocket("/ws/{username}/{password}")
 async def websocket_endpoint(websocket: WebSocket, username: str, password: str):
     await websocket.accept()

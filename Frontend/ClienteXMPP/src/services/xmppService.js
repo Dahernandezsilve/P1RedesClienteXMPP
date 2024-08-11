@@ -10,7 +10,6 @@ export const connectXmpp = (username, password, setMessages) => {
 
         loginSocket.onopen = () => {
             console.log('WebSocket login connection opened');
-            resolve('WebSocket connection established');
         };
 
         loginSocket.onmessage = (event) => {
@@ -18,10 +17,14 @@ export const connectXmpp = (username, password, setMessages) => {
             const message = JSON.parse(event.data);
             console.log('Message:', message);
 
-            if (message.status === 'failure') {
+            if (message.status === 'error') {
                 console.error('Login failed:', message.reason);
                 loginSocket.close(); // Cierra la conexión si el login falla
-                reject('Login failed: ' + message.reason);
+                resolve({ success: false, error: message.message });
+            }
+            else if (message.status === 'success') {
+                console.log('Login successful:', message.message);
+                resolve({ success: true });
             } else if (Array.isArray(message.root) && message.root.length > 0) {
                 message.root.forEach((rootItem) => {
                     if (Array.isArray(rootItem.message)) {
@@ -36,6 +39,7 @@ export const connectXmpp = (username, password, setMessages) => {
                         });
                     }
                 });
+                resolve({ success: true });
             } else {
                 console.warn('No valid messages received');
             }
@@ -61,11 +65,9 @@ export const sendMessage = (to, body) => {
     }
 };
 
-const WS_URL2 = 'ws://localhost:8000'; // URL de tu servidor FastAPI WebSocket
-
 export const registerUser = (username, password) => {
     return new Promise((resolve, reject) => {
-        const registerSocket = new WebSocket(`${WS_URL2}/register`);
+        const registerSocket = new WebSocket(`${WS_URL}/register`);
 
         registerSocket.onopen = () => {
             const registerMessage = { username, password };

@@ -67,13 +67,13 @@ const Chat = ({ user, messages }) => {
       <Slidebar contacts={contacts} onSelectContact={handleSelectContact} />
       <div className="chat-content">
         <div className="chat-header">
-          <h2>{user}'s Chat</h2>
+          <h2>{user.split('@')[0]}'s Chat</h2>
           <button onClick={handleLogout} className="lego-button">Logout</button>
         </div>
         <div className="chat-messages">
           {messageQueue.map((msg, index) => (
             <div key={index} className={`chat-message ${msg.sender === user ? 'sent' : 'received'}`}>
-              <span className="chat-sender">{msg.sender}</span>: {msg.text}
+              <span className="chat-sender">{msg.sender.split('@')[0]}</span>: {msg.text}
             </div>
           ))}
         </div>

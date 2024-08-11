@@ -12,13 +12,23 @@ const Login = ({ setUser, setMessages }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
+    if (!username || !password) {
+      setError('Username and password are required.');
+      return;
+    }
+  
     setIsLoading(true);
     try {
-      await connectXmpp(username, password, setMessages);
-      setUser(username);
-      setError('');
+      const response = await connectXmpp(username, password, setMessages);
+      console.log('Login response:', response);
+      if (response.success) {
+        setUser(username);
+        setError('');
+      } else {
+        setError(response.error || 'Login failed.'); // Muestra el error si el login falla
+      }
     } catch (err) {
-      setError('Login failed. Please check your credentials.');
+      setError('Login failed: ' + err.message);
     } finally {
       setIsLoading(false);
     }
