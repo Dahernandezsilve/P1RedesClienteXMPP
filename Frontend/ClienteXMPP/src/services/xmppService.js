@@ -41,6 +41,13 @@ export const connectXmpp = (username, password, setMessages, setContacts) => {
                     }
                 });
                 resolve({ success: true });
+            } else if (message.message && message.from) {
+                const newMessage = {
+                    sender: message.from,
+                    text: message.message
+                };
+                setMessages((messages) => [...messages, newMessage]);
+                resolve({ success: true });
             } else {
                 console.log('Message received:', message);
                 console.warn('No valid messages received');
