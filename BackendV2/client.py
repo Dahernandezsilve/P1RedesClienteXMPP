@@ -16,6 +16,7 @@ class XMPPClient:
         self.password = password
         self.resource = resource
         self.sock: Optional[socket.socket] = None
+        self.bufferMessagesToClean = []
 
     def connect_without_auth(self) -> None:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -80,8 +81,10 @@ class XMPPClient:
             except Exception as e:
                 print(f"Error al recibir datos: {e}")
                 break
+        
 
         log_message("Received", data)
+        self.bufferMessagesToClean.append(data)
         return data
 
     def get_roster(self) -> str:

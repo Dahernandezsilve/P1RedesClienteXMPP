@@ -5,7 +5,7 @@ import json
 import asyncio
 
 class CommunicationManager:
-    def __init__(self, client: XMPPClient, websocket) -> None:
+    def __init__(self, client: XMPPClient, websocket = None) -> None:
         self.client = client
         self.websocket = websocket
 
@@ -24,7 +24,53 @@ class CommunicationManager:
                 print("Error parsing XML element")
                 continue
         return users
+    
+    def search_all_users(self, filter: str = '*') -> list:
+        # Construir la solicitud de búsqueda para el servicio específico
+        search_query = f"""<iq type='set' from='{self.client.username}@{self.client.server}/testWeb' to='search.alumchat.lol' id='search1' xml:lang='en'>
+            <query xmlns='jabber:iq:search'>
+                <x xmlns='jabber:x:data' type='submit'>
+                    <field var='FORM_TYPE' type='hidden'>
+                        <value>jabber:iq:search</value>
+                    </field>
+                    <field var='search'>
+                        <value>{filter}</value> <!-- Valor de búsqueda -->
+                    </field>
+                    <field var='Username' type='boolean'>
+                        <value>1</value>
+                    </field>
+                    <field var='Name' type='boolean'>
+                        <value>1</value>
+                    </field>
+                    <field var='Email' type='boolean'>
+                        <value>1</value>
+                    </field>
+                </x>
+            </query>
+        </iq>"""
 
+        # Enviar la solicitud al servidor
+        self.client.send(search_query)
+        search_response = self.client.receive()
+
+        user_pattern = re.compile(r'<item>.*?<field var="jid"><value>(.*?)</value></field>.*?<field var="Username"><value>(.*?)</value></field>.*?<field var="Name"><value>(.*?)</value></field>.*?<field var="Email"><value>(.*?)</value></field>.*?</item>', re.DOTALL)
+        
+        # Buscar todos los usuarios en el XML
+        matches = user_pattern.findall(search_response)
+        
+        users = []
+        for match in matches:
+            jid, username, name, email = match
+            users.append({
+                'jid': jid,
+                'username': username,
+                'name': name,
+                'email': email,
+            })
+            
+        
+        return users
+        
     def add_contact(self, username: str) -> None:
         # Lógica para agregar contacto
         pass

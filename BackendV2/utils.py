@@ -3,6 +3,7 @@ import xmltodict
 import json
 import re
 import xml.etree.ElementTree as ET
+from typing import List
 
 def xml_to_json(xml_string: str) -> str:
     """
@@ -46,7 +47,48 @@ def split_xml_messages(xml_data: str):
     messages = message_pattern.findall(xml_data)
     return messages
 
-def handle_xml_data(xml_data: str):
-    messages = split_xml_messages(xml_data)
-    for message in messages:
-        process_message(message)
+
+
+def split_presence_messages(xml_data: str) -> List[str]:
+    """
+    Divide un bloque de datos XML en mensajes de presencia individuales.
+
+    :param xml_data: Datos XML que contienen múltiples mensajes de presencia.
+    :return: Lista de mensajes de presencia individuales.
+    """
+    presence_messages = []
+    try:
+        # Usa ElementTree para analizar el XML completo
+        root = ET.fromstring(f'<root>{xml_data}</root>')  # Envuelve en un contenedor raíz ficticio
+
+        # Encuentra todos los elementos de presencia dentro del contenedor raíz
+        for presence in root.findall(".//presence"):
+            # Serializa el elemento de presencia a una cadena XML
+            presence_xml = ET.tostring(presence, encoding='unicode')
+            presence_messages.append(presence_xml)
+    
+    except ET.ParseError as e:
+        print(f"Error parsing XML data: {e}")
+    
+    return presence_messages
+
+def split_all_messages(xml_data: str) -> list:
+    """
+    Divide un bloque de datos XML en mensajes individuales de diferentes tipos (presencia, IQ, mensaje).
+    
+    :param xml_data: Datos XML que contienen múltiples mensajes.
+    :return: Lista de mensajes individuales.
+    """
+    # Expresión regular para encontrar los diferentes tipos de mensajes
+    message_patterns = [
+        r'<message[^>]*>.*?</message>',  # Mensajes de chat
+        r'<iq[^>]*>.*?</iq>',            # Mensajes IQ
+        r'<presence[^>]*>.*?</presence>' # Mensajes de presencia
+    ]
+    
+    # Concatenate all patterns into one single regex pattern
+    combined_pattern = '|'.join(message_patterns)
+    
+    # Encuentra todos los mensajes usando la expresión regular combinada
+    all_messages = re.findall(combined_pattern, xml_data, re.DOTALL)
+    return all_messages

@@ -4,7 +4,7 @@ const WS_URL = 'ws://localhost:8000'; // URL de tu servidor FastAPI WebSocket
 
 let loginSocket;
 
-export const connectXmpp = (username, password, setMessages, setContacts) => {
+export const connectXmpp = (username, password, setMessages, setContacts, setUsersList) => {
     return new Promise((resolve, reject) => {
         loginSocket = new WebSocket(`${WS_URL}/ws/${username}/${password}`);
 
@@ -15,17 +15,19 @@ export const connectXmpp = (username, password, setMessages, setContacts) => {
         loginSocket.onmessage = (event) => {
             const message = JSON.parse(event.data);
             console.log('WebSocket message received:', message);
-
+        
             if (message.status === 'error') {
                 console.error('Login failed:', message.message);
                 loginSocket.close(); // Cierra la conexión si el login falla
                 resolve({ success: false, error: message.message });
-            }
-            else if (message.status === 'success' && message.users) {
-                // Si el login es exitoso y se recibe la lista de usuarios
-                console.log('Login successful. Users list received:', message.users);
-                setContacts(message.users); // Almacena la lista de usuarios en el estado
-                resolve({ success: true });
+            } else if (message.action === 'show_all_users' && Array.isArray(message.users)) {
+                // Si se recibe la lista completa de usuarios
+                console.log('All users list received:', message.users);
+                setUsersList(message.users); // Almacena la lista completa de usuarios en el estado
+            } else if (message.status === 'success' && message.users && message.action === "contacts") {
+                // Si se recibe la lista de contactos
+                console.log('Contacts list received:', message.users);
+                setContacts(message.users); // Almacena la lista de contactos en el estado
             } else if (Array.isArray(message.root) && message.root.length > 0) {
                 message.root.forEach((rootItem) => {
                     if (Array.isArray(rootItem.message)) {
@@ -40,18 +42,17 @@ export const connectXmpp = (username, password, setMessages, setContacts) => {
                         });
                     }
                 });
-                resolve({ success: true });
             } else if (message.message && message.from) {
                 const newMessage = {
                     sender: message.from,
                     text: message.message
                 };
                 setMessages((messages) => [...messages, newMessage]);
-                resolve({ success: true });
             } else {
                 console.log('Message received:', message);
                 console.warn('No valid messages received');
             }
+            resolve({ success: true });
         };
 
         loginSocket.onclose = () => {
@@ -64,9 +65,19 @@ export const connectXmpp = (username, password, setMessages, setContacts) => {
     });
 };
 
+// Función para solicitar la lista de todos los usuarios
+export const showAllUsers = () => {
+    if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
+        const request = { action: "show_all_users" };
+        loginSocket.send(JSON.stringify(request));
+    } else {
+        console.error('WebSocket is not open. Unable to request user list.');
+    }
+};
+
 export const sendMessage = (to, body) => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
-        const message = { to, body };
+        const message = { action: "send_message", to, body };
         loginSocket.send(JSON.stringify(message));
     } else {
         console.error('WebSocket is not open. Unable to send message.');

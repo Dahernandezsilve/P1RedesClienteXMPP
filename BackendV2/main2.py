@@ -16,16 +16,6 @@ class WebSocketMessageHandler(MessageHandler):
         super().__init__(client, comm_manager)
         self.websocket = websocket
 
-    async def handle_received_message(self, message: str, from_attr: str) -> None:
-        print(f"Handling received message: {message}")
-        print(f"es aqui")
-        json_message = await self.comm_manager.handle_received_message(message, from_attr)
-        print("pasosoooooo")
-        if json_message:
-            print(f"Sending message to WebSocket: {json_message}")
-            await self.websocket.send_text(json_message)
-        await asyncio.sleep(1)  # Evitar un ciclo de CPU intensome
-        
 @app.websocket("/ws/{username}/{password}")
 async def websocket_endpoint(websocket: WebSocket, username: str, password: str):
     await websocket.accept()
@@ -45,7 +35,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
     
     try:
         roster_response = comm_manager.show_users()
-        user_list = {"status": "success", "users": roster_response}
+        user_list = {"status": "success", "action": "contacts", "users": roster_response}
         await websocket.send_text(json.dumps(user_list))
     except Exception as e:
         error_message = {"status": "error", "message": f"Failed to retrieve user list: {str(e)}"}
@@ -58,11 +48,24 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
         try:
             data = await websocket.receive_text()
             message = json.loads(data)
-            to = message["to"]
-            body = message["body"]
-            comm_manager.send_message(to, body)
-            response = {"status": "success", "message": f"Message sent to {to}"}
-            await websocket.send_text(json.dumps(response))
+
+            if message["action"] == "show_all_users":
+                # Manejar la solicitud de mostrar todos los usuarios
+                try:
+                    users = comm_manager.search_all_users()
+                    user_list = {"status": "success", "action": "show_all_users", "users": users}
+                    await websocket.send_text(json.dumps(user_list))
+                except Exception as e:
+                    error_message = {"status": "error", "message": f"Failed to retrieve user list: {str(e)}"}
+                    await websocket.send_text(json.dumps(error_message))
+            
+            elif message["action"] == "send_message":
+                to = message["to"]
+                body = message["body"]
+                comm_manager.send_message(to, body)
+                response = {"status": "success", "message": f"Message sent to {to}"}
+                await websocket.send_text(json.dumps(response))
+
         except WebSocketDisconnect:
             break
         except Exception as e:
@@ -73,6 +76,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
 
     account_manager.logout()
     del clients[username]
+
 
 @app.websocket("/register")
 async def register_user(websocket: WebSocket):

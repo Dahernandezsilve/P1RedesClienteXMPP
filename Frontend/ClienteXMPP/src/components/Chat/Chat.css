@@ -104,5 +104,21 @@
 }
 
 .lego-button:hover {
-  background-color: #b38a00;
+  background-color: #ff2600;
+}
+
+.lego-button2 {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #242424;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  margin-right: -20vw;
+}
+
+.lego-button2:hover {
+  background-color: #ff2600;
 }

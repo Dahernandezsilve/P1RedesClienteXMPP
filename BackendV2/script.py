@@ -12,7 +12,7 @@ async def main():
     
     try:
         # Iniciar sesión con la cuenta
-        username = 'her21270-test1'
+        username = 'her21270-test2'
         password = '1234'
         account_manager.login(username, password)
         
@@ -23,8 +23,8 @@ async def main():
         message_handler = MessageHandler(account_manager.client, comm_manager)
         
         # Obtener lista de usuarios
-        users = comm_manager.show_users()
-        print("Usuarios:", users)
+        users = comm_manager.search_all_users('*')
+        print("Usuarios encontrados:", users)
         
         # Enviar un mensaje (descomentado si se necesita)
         # comm_manager.send_message('jim21169-test@alumchat.lol', 'Hola, ¿cómo estás?')

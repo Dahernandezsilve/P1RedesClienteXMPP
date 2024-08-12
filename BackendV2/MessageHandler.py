@@ -2,7 +2,7 @@ import asyncio
 import xml.etree.ElementTree as ET
 from typing import Optional
 from communicationManager import CommunicationManager
-from utils import split_xml_messages
+from utils import split_xml_messages, split_presence_messages, split_all_messages
 
 class MessageHandler:
     def __init__(self, client, comm_manager: CommunicationManager) -> None:
@@ -13,7 +13,12 @@ class MessageHandler:
     async def receive_messages(self):
         while True:
             try:
-                message = await asyncio.to_thread(self.client.receive)
+                if self.client.bufferMessagesToClean:
+                    # Procesar mensajes almacenados en bufferMessagesToClean
+                    for buffered_message in self.client.bufferMessagesToClean:
+                        await self.message_queue.put(buffered_message)
+                    self.client.bufferMessagesToClean.clear()
+                    message = await asyncio.to_thread(self.client.receive)
                 if message:
                     await self.message_queue.put(message)
                     await self.process_messages()
@@ -26,9 +31,12 @@ class MessageHandler:
     async def process_messages(self):
         while not self.message_queue.empty():
             message = await self.message_queue.get()
-            await self.handle_message(message)
+            messages = split_all_messages(message)
+            for msg in messages:
+                await self.handle_message(msg)
 
     async def handle_message(self, message: str):
+        
         if "<message" in message:
             await self.handle_chat_message(message)
         elif "<iq" in message:
@@ -68,10 +76,25 @@ class MessageHandler:
     async def handle_presence_message(self, message: str):
         print(f"Processing presence message: {message}")
         try:
-            root = ET.fromstring(message)
-            show = root.find(".//{jabber:client}show")
-            status = root.find(".//{jabber:client}status")
-            print(f"Presence show: {show.text if show is not None else 'unknown'}, status: {status.text if status is not None else 'unknown'}")
-            # Aquí puedes agregar lógica para actualizar el estado de presencia en la interfaz de usuario
-        except ET.ParseError:
-            print("Error parsing presence message")
+            # Dividir el mensaje en fragmentos de presencia
+            presence_messages = split_presence_messages(message)
+            for presence in presence_messages:
+                try:
+                    # Intentar analizar cada fragmento de presencia como XML
+                    print(f"Individual presence message: {presence}")
+                    root = ET.fromstring(presence)
+                    show = root.find(".//{jabber:client}show")
+                    status = root.find(".//{jabber:client}status")
+                    show_text = show.text if show is not None else 'unknown'
+                    status_text = status.text if status is not None else 'unknown'
+                    print(f"Presence show: {show_text}, status: {status_text}")
+                    # Aquí puedes agregar lógica para actualizar el estado de presencia en la interfaz de usuario
+                except ET.ParseError as e:
+                    print(f"Error parsing individual presence message: {presence}")
+                    print(f"ParseError details: {e}")
+                except Exception as e:
+                    print(f"Unexpected error processing presence message: {presence}")
+                    print(f"Error details: {e}")
+        except Exception as e:
+            print(f"Error processing presence messages: {message}")
+            print(f"Error details: {e}")
