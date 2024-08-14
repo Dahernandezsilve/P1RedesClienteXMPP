@@ -66,6 +66,17 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                 response = {"status": "success", "message": f"Message sent to {to}"}
                 await websocket.send_text(json.dumps(response))
 
+            elif message["action"] == "add_contact":
+                try:
+                    contact_username = message["contact_username"]
+                    custom_message = message.get("custom_message", "")
+                    comm_manager.add_contact(contact_username, custom_message)
+                    response = {"status": "success", "message": f"Contact {contact_username} added successfully with message: {custom_message}"}
+                    await websocket.send_text(json.dumps(response))
+                except Exception as e:
+                    error_message = {"status": "error", "message": f"Failed to add contact: {str(e)}"}
+                    await websocket.send_text(json.dumps(error_message))
+
         except WebSocketDisconnect:
             break
         except Exception as e:

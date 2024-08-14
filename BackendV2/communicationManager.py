@@ -71,9 +71,35 @@ class CommunicationManager:
         
         return users
         
-    def add_contact(self, username: str) -> None:
-        # Lógica para agregar contacto
-        pass
+    def add_contact(self, username: str, custom_message: str = "") -> None:
+        # Construir el JID completo del usuario a añadir
+        user_jid = f"{username}@{self.client.server}"
+
+        # Solicitud para agregar al contacto al roster
+        add_roster_query = f"""
+        <iq type='set' id='add_contact_1'>
+            <query xmlns='jabber:iq:roster'>
+                <item jid='{user_jid}' name='{username}'>
+                    <group>Friends</group>
+                </item>
+            </query>
+        </iq>"""
+
+        # Enviar la solicitud al servidor
+        self.client.send(add_roster_query)
+
+        # Solicitar la presencia suscrita con un mensaje personalizado
+        subscribe_presence = f"""
+        <presence to='{user_jid}' type='subscribe'>
+            <status>{custom_message}</status>
+        </presence>
+        """
+
+        # Enviar la solicitud al servidor
+        self.client.send(subscribe_presence)
+
+        print(f"Contact {user_jid} added successfully with message: {custom_message}")
+
 
     def show_contact_details(self, username: str) -> None:
         # Lógica para mostrar detalles de contacto
@@ -104,8 +130,7 @@ class CommunicationManager:
             "message": message,
             "from": from_attr
         }
-        # Convierte el objeto JSON a una cadena de texto
-        print("pasosoooooo")
+
         if json_message:
             print(f"Sending message to WebSocket: {json_message}")
             await self.websocket.send_text(json.dumps(json_message))

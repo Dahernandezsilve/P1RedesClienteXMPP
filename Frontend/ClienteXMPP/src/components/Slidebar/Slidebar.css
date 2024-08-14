@@ -1,45 +1,69 @@
-.slidebar {
-  width: 26vw;
-  height: 100%;
-  position: fixed; /* Mantener la barra lateral fija */
-  background: linear-gradient(120deg,  #000000, #ff2600,  #000000);
-  background-size: 300% 300%;
-  transition: background-position 1s ease;
-  border-right: 2px solid #000000;
+  .slidebar {
+    width: 26vw;
+    height: 100%;
+    position: fixed;
+    background: linear-gradient(120deg, #000000, #ff2600, #000000);
+    background-size: 300% 300%;
+    transition: background-position 1s ease;
+    border-right: 2px solid #000000;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
 
-}
+  .slidebar:hover {
+    background-position: 100% 100%;
+  }
 
-.slidebar:hover {
-  background-position: 100% 100%;
-}
+  .slidebar h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+  }
 
-.slidebar h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-}
+  .slidebar ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto; /* Permitir desplazamiento vertical */
+    max-height: calc(100vh - 120px); /* Ajustar el tamaño de la lista para que sea scrollable */
+    flex-grow: 1;
+  }
 
-.slidebar ul {
-  list-style-type: none;
-  padding: 0;
-}
+  .slidebar ul li {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.3s;
+  }
 
-.slidebar ul li {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  cursor: pointer;
-  font-size: 13px;
-  transition: background-color 0.3s;
-}
+  .slidebar ul li:hover {
+    background-color: #000000;
+  }
 
-.slidebar ul li:hover {
-  background-color: #000000;
-}
+  .profile-image {
+    width: 2vw;
+    height: 4vh;
+    border-radius: 10px;
+    margin-left: 17px;
+    margin-right: 1vw;
+  }
 
-.profile-image {
-  width: 2vw; /* Ajustar el tamaño de la imagen */
-  height: 4vh;
-  border-radius: 10px;
-  margin-left: 17px;
-  margin-right: 1vw; /* Espacio entre la imagen y el texto */
-}
+  .add-contact-section {
+    padding: 10px;
+    border-top: 2px solid #000000;
+    position: relative; /* Mantener la sección fija al final de la slidebar */
+  }
+
+  .lego-inputS {
+    width: 95%;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    padding: 10px;
+    border-color: #000000;
+  }
+
+  .lego-buttonS {
+    width: 100%;
+  }

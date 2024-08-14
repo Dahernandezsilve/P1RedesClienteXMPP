@@ -21,14 +21,23 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                 loginSocket.close(); // Cierra la conexión si el login falla
                 resolve({ success: false, error: message.message });
             } else if (message.action === 'show_all_users' && Array.isArray(message.users)) {
-                // Si se recibe la lista completa de usuarios
+                // Manejar la lista de todos los usuarios
                 console.log('All users list received:', message.users);
-                setUsersList(message.users); // Almacena la lista completa de usuarios en el estado
+                setUsersList(message.users);
             } else if (message.status === 'success' && message.users && message.action === "contacts") {
-                // Si se recibe la lista de contactos
+                // Manejar la lista de contactos
                 console.log('Contacts list received:', message.users);
-                setContacts(message.users); // Almacena la lista de contactos en el estado
+                setContacts(message.users);
+            } else if (message.action === "add_contact") {
+                // Manejar la respuesta de agregar contacto
+                if (message.status === 'success') {
+                    console.log(`Contact ${message.message} added successfully.`);
+                    // Aquí podrías actualizar la lista de contactos o notificar al usuario
+                } else {
+                    console.error('Failed to add contact:', message.message);
+                }
             } else if (Array.isArray(message.root) && message.root.length > 0) {
+                // Manejar mensajes entrantes
                 message.root.forEach((rootItem) => {
                     if (Array.isArray(rootItem.message)) {
                         rootItem.message.forEach((msg) => {
@@ -54,6 +63,7 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
             }
             resolve({ success: true });
         };
+        
 
         loginSocket.onclose = () => {
             console.log('WebSocket login connection closed');
@@ -72,6 +82,19 @@ export const showAllUsers = () => {
         loginSocket.send(JSON.stringify(request));
     } else {
         console.error('WebSocket is not open. Unable to request user list.');
+    }
+};
+
+export const addContact = (contact_username, custom_message = "") => {
+    if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
+        const request = {
+            action: "add_contact",
+            contact_username,
+            custom_message
+        };
+        loginSocket.send(JSON.stringify(request));
+    } else {
+        console.error('WebSocket is not open. Unable to add contact.');
     }
 };
 

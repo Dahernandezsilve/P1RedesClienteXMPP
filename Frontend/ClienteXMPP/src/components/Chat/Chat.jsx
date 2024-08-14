@@ -11,16 +11,6 @@ const Chat = ({ user, messages, contacts, usersList}) => {
   const [messageQueue, setMessageQueue] = useState([]);
   const [modalOpen, setModalOpen] = useState(false)
 
-  const mockUsers = [
-    { username: 'alice123', name: 'Alice Johnson', email: 'alice.johnson@example.com' },
-    { username: 'bob456', name: 'Bob Smith', email: 'bob.smith@example.com' },
-    { username: 'charlie789', name: 'Charlie Brown', email: 'charlie.brown@example.com' },
-    { username: 'david101', name: 'David Wilson', email: 'david.wilson@example.com' },
-    { username: 'eve202', name: 'Eve Davis', email: 'eve.davis@example.com' },
-    { username: 'frank303', name: 'Frank Miller', email: 'frank.miller@example.com' },
-    { username: 'grace404', name: 'Grace Lee', email: 'grace.lee@example.com' },
-    { username: 'hank505', name: 'Hank Anderson', email: 'hank.anderson@example.com' },
-  ];
 
   const handleSend = () => {
     if (message.trim() && recipient.trim()) {

@@ -28,6 +28,7 @@ async def main():
         
         # Enviar un mensaje (descomentado si se necesita)
         # comm_manager.send_message('jim21169-test@alumchat.lol', 'Hola, ¿cómo estás?')
+        comm_manager.add_contact('jim21169-test', 'Hola, soy... 👀')
         
         # Iniciar la recepción de mensajes
         asyncio.create_task(message_handler.receive_messages())
