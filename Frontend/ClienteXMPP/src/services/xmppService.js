@@ -4,7 +4,7 @@ const WS_URL = 'ws://localhost:8000'; // URL de tu servidor FastAPI WebSocket
 
 let loginSocket;
 
-export const connectXmpp = (username, password, setMessages, setContacts, setUsersList) => {
+export const connectXmpp = (username, password, setMessages, setContacts, setUsersList, setPresence) => {
     return new Promise((resolve, reject) => {
         loginSocket = new WebSocket(`${WS_URL}/ws/${username}/${password}`);
 
@@ -36,6 +36,12 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                 } else {
                     console.error('Failed to add contact:', message.message);
                 }
+            } else if (message.action === "presence_update") {
+                console.log('Presence update received:', message.presence);
+                setPresence(prevPresence => ({
+                    ...prevPresence,
+                    [message.presence.from.split('/')[0]]: message.presence
+                }));
             } else if (Array.isArray(message.root) && message.root.length > 0) {
                 // Manejar mensajes entrantes
                 message.root.forEach((rootItem) => {

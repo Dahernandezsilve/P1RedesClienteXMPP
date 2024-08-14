@@ -5,7 +5,7 @@ import { addContact } from '@services/xmppService'; // Importa la función para 
 
 const defaultProfileImage = './usuario.png';
 
-const Slidebar = ({ contacts, onSelectContact }) => {
+const Slidebar = ({ contacts, onSelectContact, presence }) => {
   const [newContact, setNewContact] = useState(''); // Estado para el nuevo contacto
   const [customMessage, setCustomMessage] = useState(''); // Estado para el mensaje personalizado
 
@@ -22,17 +22,34 @@ const Slidebar = ({ contacts, onSelectContact }) => {
   return (
     <div className="slidebar">
       <Header />
-      <ul>
-        {contacts.map((contact, index) => (
-          <li key={index} onClick={() => onSelectContact(contact.jid)}>
-            <img 
-              src={contact.profileImage || defaultProfileImage} 
-              alt={`${contact.jid} profile`} 
-              className="profile-image" 
-            />
-            {contact.jid}
-          </li>
-        ))}
+      <ul className="contacts-list">
+        {contacts.map((contact, index) => {
+          // Obtener el estado de presencia del contacto o establecer un valor predeterminado
+          const contactPresence = presence[contact.jid] || { show: 'unavailable', status: 'No available' };
+
+          // Mostrar 'busy' en lugar de 'dnd', 'Not Available' en lugar de 'xa', y mostrar el show si es diferente de 'unavailable', de lo contrario, mostrar el tipo
+          const presenceDisplay = contactPresence.show === 'dnd'
+            ? 'busy'
+            : contactPresence.show === 'xa'
+            ? 'notavailable'
+            : contactPresence.show !== 'unknown'
+            ? contactPresence.show
+            : contactPresence.type;
+
+          return (
+            <li key={index} onClick={() => onSelectContact(contact.jid)}>
+              <img 
+                src={contact.profileImage || defaultProfileImage} 
+                alt={`${contact.jid} profile`} 
+                className="profile-image" 
+              />
+              <span className="contact-name">{contact.jid}</span>
+              <span className={`presence-indicator ${presenceDisplay}`}>
+                {contactPresence.show === 'dnd' ? 'busy' : contactPresence.show === 'xa' ? 'Not Available' : contactPresence.show !== 'unknown' ? contactPresence.show : contactPresence.type}
+              </span>
+            </li>
+          );
+        })}
       </ul>
       <div className="add-contact-section">
         <input

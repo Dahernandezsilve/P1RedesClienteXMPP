@@ -18,13 +18,17 @@ class CommunicationManager:
                 root = ET.fromstring(element)
                 for item in root.findall(".//{jabber:iq:roster}item"):
                     jid = item.get("jid")
-                    name = item.get("name")
-                    users.append({"jid": jid, "name": name})
+                    name = item.get("name", "")
+                    subscription = item.get("subscription", "")
+                    
+                    # Solo añadir usuarios con una suscripción activa
+                    if subscription != "none":
+                        users.append({"jid": jid, "name": name})
             except ET.ParseError:
                 print("Error parsing XML element")
                 continue
         return users
-    
+
     def search_all_users(self, filter: str = '*') -> list:
         # Construir la solicitud de búsqueda para el servicio específico
         search_query = f"""<iq type='set' from='{self.client.username}@{self.client.server}/testWeb' to='search.alumchat.lol' id='search1' xml:lang='en'>
@@ -80,7 +84,7 @@ class CommunicationManager:
         <iq type='set' id='add_contact_1'>
             <query xmlns='jabber:iq:roster'>
                 <item jid='{user_jid}' name='{username}'>
-                    <group>Friends</group>
+                    <group>Contacts</group>
                 </item>
             </query>
         </iq>"""

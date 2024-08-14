@@ -21,14 +21,11 @@ async def main():
         
         # Crear instancia de MessageHandler
         message_handler = MessageHandler(account_manager.client, comm_manager)
-        
-        # Obtener lista de usuarios
-        users = comm_manager.search_all_users('*')
-        print("Usuarios encontrados:", users)
+    
         
         # Enviar un mensaje (descomentado si se necesita)
         # comm_manager.send_message('jim21169-test@alumchat.lol', 'Hola, ¿cómo estás?')
-        comm_manager.add_contact('jim21169-test', 'Hola, soy... 👀')
+        comm_manager.show_users()
         
         # Iniciar la recepción de mensajes
         asyncio.create_task(message_handler.receive_messages())

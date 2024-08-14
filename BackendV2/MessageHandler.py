@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 from typing import Optional
 from communicationManager import CommunicationManager
 from utils import split_xml_messages, split_presence_messages, split_all_messages
+import json
 
 class MessageHandler:
     def __init__(self, client, comm_manager: CommunicationManager) -> None:
@@ -83,12 +84,45 @@ class MessageHandler:
                     # Intentar analizar cada fragmento de presencia como XML
                     print(f"Individual presence message: {presence}")
                     root = ET.fromstring(presence)
-                    show = root.find(".//{jabber:client}show")
-                    status = root.find(".//{jabber:client}status")
+
+                    # Obtener el tipo de presencia y el JID del remitente
+                    presence_type = root.attrib.get('type', 'available')
+                    from_jid = root.attrib.get('from', 'unknown')
+
+                    # Obtener el estado y el show, sin tener en cuenta el espacio de nombres
+                    show = root.find(".//show")
+                    status = root.find(".//status")
                     show_text = show.text if show is not None else 'unknown'
                     status_text = status.text if status is not None else 'unknown'
-                    print(f"Presence show: {show_text}, status: {status_text}")
-                    # Aquí puedes agregar lógica para actualizar el estado de presencia en la interfaz de usuario
+
+                    print(f"Presence type: {presence_type}, from: {from_jid}, show: {show_text}, status: {status_text}")
+
+                    # Crear el mensaje para el frontend
+                    presence_info = {
+                        "from": from_jid,
+                        "type": presence_type,
+                        "show": show_text,
+                        "status": status_text
+                    }
+
+                    # Enviar la información al frontend
+                    user_list = {"status": "success", "action": "presence_update", "presence": presence_info}
+                    await self.websocket.send_text(json.dumps(user_list))
+
+                    # Manejar diferentes tipos de presencia
+                    if presence_type == 'unavailable':
+                        # El usuario ha cerrado sesión o está desconectado
+                        print(f"User {from_jid} is now unavailable.")
+                        # Aquí puedes actualizar tu lista de usuarios, interfaz, etc.
+
+                    elif presence_type == 'subscribed':
+                        # El otro usuario aceptó tu solicitud de amistad
+                        print(f"User {from_jid} accepted your contact request.")
+                        # Actualizar el roster
+                        roster_response = await asyncio.to_thread(self.comm_manager.show_users)
+                        user_list = {"status": "success", "action": "contacts", "users": roster_response}
+                        await self.websocket.send_text(json.dumps(user_list))
+
                 except ET.ParseError as e:
                     print(f"Error parsing individual presence message: {presence}")
                     print(f"ParseError details: {e}")

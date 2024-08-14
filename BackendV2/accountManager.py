@@ -23,7 +23,7 @@ class AccountManager:
         self.client.connect()
 
         # Send presence to server
-        self.client.send("<presence/>")
+        self.client.send("<presence><status>Online</status></presence>")
         
 
     def logout(self) -> None:

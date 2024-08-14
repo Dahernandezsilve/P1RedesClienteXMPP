@@ -5,7 +5,7 @@ import Slidebar from '@components/Slidebar'; // Importa el componente Slidebar
 import Modal from '@components/Modal'; // Importa el componente Modal
 import { showAllUsers } from '../../services/xmppService';
 
-const Chat = ({ user, messages, contacts, usersList}) => {
+const Chat = ({ user, messages, contacts, usersList, presence}) => {
   const [message, setMessage] = useState('');
   const [recipient, setRecipient] = useState('');
   const [messageQueue, setMessageQueue] = useState([]);
@@ -57,9 +57,14 @@ const Chat = ({ user, messages, contacts, usersList}) => {
     }
   }, [messages, messageQueue]);
 
+  useEffect(() => {
+    // Aquí puedes hacer lo necesario para reflejar la presencia en la lista de contactos
+    console.log('Updated presence:', presence);
+  }, [presence]);
+
   return (
     <div className="chat-container">
-      <Slidebar contacts={contacts} onSelectContact={handleSelectContact} />
+      <Slidebar contacts={contacts} onSelectContact={handleSelectContact} presence={presence}/>
       <div className="chat-content">
         <div className="chat-header">
           <h2>{user.split('@')[0]}'s Chat</h2>

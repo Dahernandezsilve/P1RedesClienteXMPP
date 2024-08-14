@@ -7,13 +7,14 @@ const App = () => {
   const [messages, setMessages] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [usersList, setUsersList] = useState([]);
+  const [presence, setPresence] = useState({});
 
   return (
     <div>
       {user ? (
-        <Chat user={user} messages={messages} contacts={contacts} usersList={usersList}/>
+        <Chat user={user} messages={messages} contacts={contacts} usersList={usersList} presence={presence}/>
       ) : (
-        <Login setUser={setUser} setMessages={setMessages} setContacts={setContacts} setUsersList={setUsersList}/>
+        <Login setUser={setUser} setMessages={setMessages} setContacts={setContacts} setUsersList={setUsersList} setPresence={setPresence}/>
       )}
     </div>
   );
