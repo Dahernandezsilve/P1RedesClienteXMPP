@@ -92,7 +92,7 @@
 
   /* Indicador de presencia */
 .presence-indicator {
-  font-size: 0.8rem;
+  font-size: 0.6rem;
   padding: 0.2rem 0.5rem;
   border-radius: 0.3rem;
   color: #fff;
@@ -126,4 +126,10 @@
 /* Estado de presencia: unknown */
 .presence-indicator.unknown {
   background-color: #7f8c8d; /* Gris oscuro */
+}
+
+.presence-status {
+  font-size: 0.65rem;
+  color: #ffffff;
+  margin-left: 1vw;
 }

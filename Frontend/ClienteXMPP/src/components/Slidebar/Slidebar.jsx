@@ -43,10 +43,17 @@ const Slidebar = ({ contacts, onSelectContact, presence }) => {
                 alt={`${contact.jid} profile`} 
                 className="profile-image" 
               />
-              <span className="contact-name">{contact.jid}</span>
-              <span className={`presence-indicator ${presenceDisplay}`}>
-                {contactPresence.show === 'dnd' ? 'busy' : contactPresence.show === 'xa' ? 'Not Available' : contactPresence.show !== 'unknown' ? contactPresence.show : contactPresence.type}
-              </span>
+              <div className="contact-info">
+                <span className="contact-name">{contact.jid}</span>
+                <div className="presence-container">
+                  <span className={`presence-indicator ${presenceDisplay}`}>
+                    {contactPresence.show === 'dnd' ? 'busy' : contactPresence.show === 'xa' ? 'Not Available' : contactPresence.show !== 'unknown' ? contactPresence.show : contactPresence.type}
+                  </span>
+                  <span className="presence-status">
+                   Status: {contactPresence.status}
+                  </span>
+                </div>
+              </div>
             </li>
           );
         })}
