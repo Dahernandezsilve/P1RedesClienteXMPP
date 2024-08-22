@@ -16,6 +16,8 @@ class WebSocketMessageHandler(MessageHandler):
         super().__init__(client, comm_manager)
         self.websocket = websocket
 
+
+
 @app.websocket("/ws/{username}/{password}")
 async def websocket_endpoint(websocket: WebSocket, username: str, password: str):
     await websocket.accept()

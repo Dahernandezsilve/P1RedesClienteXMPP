@@ -5,12 +5,12 @@ import Slidebar from '@components/Slidebar'; // Importa el componente Slidebar
 import Modal from '@components/Modal'; // Importa el componente Modal
 import { showAllUsers } from '../../services/xmppService';
 
-const Chat = ({ user, messages, contacts, usersList, presence}) => {
+const Chat = ({ user, messages, contacts, usersList, presence }) => {
   const [message, setMessage] = useState('');
   const [recipient, setRecipient] = useState('');
-  const [messageQueue, setMessageQueue] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false)
-
+  const [messageHistories, setMessageHistories] = useState({});
+  const [selectedContact, setSelectedContact] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
 
   const handleSend = () => {
     if (message.trim() && recipient.trim()) {
@@ -19,73 +19,107 @@ const Chat = ({ user, messages, contacts, usersList, presence}) => {
         text: message,
       };
 
-      setMessageQueue((prevQueue) => [...prevQueue, newMessage]);
+      console.log('Sending message:', newMessage);
+      console.log('Recipient:', recipient);
+
+      setMessageHistories((prevHistories) => {
+        const updatedHistories = {
+          ...prevHistories,
+          [recipient]: [...(prevHistories[recipient] || []), newMessage],
+        };
+
+        console.log('Updated message histories:', updatedHistories);
+        return updatedHistories;
+      });
 
       sendMessage(recipient, message);
       setMessage('');
+    } else {
+      console.log('Message or recipient is empty.');
     }
   };
 
   const openModal = () => {
-    // Aquí deberías hacer la llamada para obtener todos los usuarios
-    // Por ejemplo:
+    console.log('Opening modal to show all users.');
     showAllUsers();
     setModalOpen(true);
   };
 
   const closeModal = () => {
+    console.log('Closing modal.');
     setModalOpen(false);
   };
 
   const handleLogout = () => {
+    console.log('Logging out.');
     window.location.reload();
   };
 
   const handleSelectContact = (contact) => {
-    setRecipient(contact); // Selecciona el contacto para enviarle mensajes
+    console.log('Contact selected:', contact);
+    setSelectedContact(contact);
+    setRecipient(contact);
   };
 
   useEffect(() => {
     if (messages.length > 0) {
-      const newMessages = messages.filter((msg) => 
-        !messageQueue.some((queuedMsg) => queuedMsg.text === msg.text && queuedMsg.sender === msg.sender)
-      );
+      console.log('New messages received:', messages);
+    }
+
+    if (selectedContact) {
+      console.log('Selected contact:', selectedContact);
+
+      const newMessages = messages.filter((msg) => {
+        if (msg.sender && msg.receiver && selectedContact) {
+          const senderMatches = msg.sender.split('@')[0] === selectedContact.split('@')[0];
+          const receiverMatches = msg.receiver.split('@')[0] === selectedContact.split('@')[0];
+          const result = senderMatches || receiverMatches;
+
+          console.log(`Filtering message: sender=${msg.sender}, receiver=${msg.receiver}, result=${result}`);
+          return result;
+        }
+        return false;
+      });
 
       if (newMessages.length > 0) {
-        setMessageQueue((prevQueue) => [...prevQueue, ...newMessages]);
+        console.log('Filtered new messages:', newMessages);
+
+        setMessageHistories((prevHistories) => {
+          const updatedHistories = {
+            ...prevHistories,
+            [selectedContact.split('@')[0]]: [...(prevHistories[selectedContact.split('@')[0]] || []), ...newMessages],
+          };
+
+          console.log('Updated message histories with new messages:', updatedHistories);
+          return updatedHistories;
+        });
+      } else {
+        console.log('No new messages to update.');
       }
     }
-  }, [messages, messageQueue]);
+  }, [messages, selectedContact]);
 
   useEffect(() => {
-    // Aquí puedes hacer lo necesario para reflejar la presencia en la lista de contactos
     console.log('Updated presence:', presence);
   }, [presence]);
 
   return (
     <div className="chat-container">
-      <Slidebar contacts={contacts} onSelectContact={handleSelectContact} presence={presence}/>
+      <Slidebar contacts={contacts} onSelectContact={handleSelectContact} presence={presence} />
       <div className="chat-content">
         <div className="chat-header">
-          <h2>{user.split('@')[0]}'s Chat</h2>
+          <h2>{selectedContact ? selectedContact.split('@')[0] : 'Select a Contact'}'s Chat</h2>
           <button onClick={openModal} className="lego-button2">Show All Users</button>
           <button onClick={handleLogout} className="lego-button">Logout</button>
         </div>
         <div className="chat-messages">
-          {messageQueue.map((msg, index) => (
+          {(selectedContact && messageHistories[selectedContact] || []).map((msg, index) => (
             <div key={index} className={`chat-message ${msg.sender === user ? 'sent' : 'received'}`}>
-              <span className="chat-sender">{msg.sender.split('@')[0]}</span>: {msg.text}
+              <span className="chat-sender">{msg.sender ? msg.sender.split('@')[0] : 'Unknown'}</span>: {msg.text}
             </div>
           ))}
         </div>
         <div className="chat-inputs">
-          <input
-            type="text"
-            placeholder="Recipient"
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value)}
-            className="lego-input"
-          />
           <input
             type="text"
             placeholder="Message"

@@ -57,6 +57,15 @@ class XMPPClient:
         log_message("Sending", data)
         self.sock.sendall(data.encode('utf-8'))
 
+    def is_connected(self):
+        if self.sock is None:
+            print("🚨 Socket es None")
+            return False
+        else:
+            print("🟢 Socket está conectado") 
+        
+        return True
+
     def receive(self) -> str:
         data = ""
         buffer_size = 4096  # Tamaño inicial del búfer
