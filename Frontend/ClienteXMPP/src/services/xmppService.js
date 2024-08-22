@@ -50,7 +50,7 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                             if (msg.body && Array.isArray(msg.body) && msg.body.length > 0) {
                                 const newMessage = {
                                     sender: msg['@from'],
-                                    text: msg.body[0]
+                                    text: msg.body[0],
                                 };
                                 setMessages((messages) => [...messages, newMessage]);
                             }
@@ -60,8 +60,10 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
             } else if (message.message && message.from) {
                 const newMessage = {
                     sender: message.from,
-                    text: message.message
+                    text: message.message,
+                    id_message: message.id_message
                 };
+                console.log('Message received:', message);
                 setMessages((messages) => [...messages, newMessage]);
             } else {
                 console.log('Message received:', message);

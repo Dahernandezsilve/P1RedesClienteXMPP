@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './Chat.css';
 import { sendMessage } from '@services/xmppService';
-import Slidebar from '@components/Slidebar'; // Importa el componente Slidebar
-import Modal from '@components/Modal'; // Importa el componente Modal
+import Slidebar from '@components/Slidebar';
+import Modal from '@components/Modal';
 import { showAllUsers } from '../../services/xmppService';
 
 const Chat = ({ user, messages, contacts, usersList, presence }) => {
@@ -11,12 +11,14 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
   const [messageHistories, setMessageHistories] = useState({});
   const [selectedContact, setSelectedContact] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [processedMessageIds, setProcessedMessageIds] = useState(new Set()); // Estado para almacenar los ID de mensajes procesados
 
   const handleSend = () => {
     if (message.trim() && recipient.trim()) {
       const newMessage = {
         sender: user,
         text: message,
+        timestamp: new Date().toISOString(),
       };
 
       console.log('Sending message:', newMessage);
@@ -70,34 +72,48 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
       console.log('Selected contact:', selectedContact);
 
       const newMessages = messages.filter((msg) => {
-        if (msg.sender && msg.receiver && selectedContact) {
-          const senderMatches = msg.sender.split('@')[0] === selectedContact.split('@')[0];
-          const receiverMatches = msg.receiver.split('@')[0] === selectedContact.split('@')[0];
-          const result = senderMatches || receiverMatches;
+        // Se asume que el receptor es el usuario autenticado si no se especifica
+        const receiver = msg.receiver || user;
+        const senderMatches = msg.sender.split('/')[0] === selectedContact.split('/')[0];
+        const receiverMatches = receiver.split('@')[0] === selectedContact.split('@')[0];
 
-          console.log(`Filtering message: sender=${msg.sender}, receiver=${msg.receiver}, result=${result}`);
-          return result;
-        }
-        return false;
+        // Verificar si el mensaje ya fue procesado
+        const isDuplicate = processedMessageIds.has(msg.id_message);
+        
+        return (senderMatches || receiverMatches) && !isDuplicate;
       });
 
       if (newMessages.length > 0) {
         console.log('Filtered new messages:', newMessages);
 
+        // Actualizar el historial de mensajes y almacenar los ID procesados
         setMessageHistories((prevHistories) => {
           const updatedHistories = {
             ...prevHistories,
-            [selectedContact.split('@')[0]]: [...(prevHistories[selectedContact.split('@')[0]] || []), ...newMessages],
+            [selectedContact]: [
+              ...(prevHistories[selectedContact] || []),
+              ...newMessages.map((msg) => ({
+                ...msg,
+                receivedAt: new Date().toISOString(), // Marca cuando se recibió el mensaje
+              })),
+            ],
           };
 
           console.log('Updated message histories with new messages:', updatedHistories);
           return updatedHistories;
         });
+
+        // Añadir los nuevos IDs al conjunto de IDs procesados
+        setProcessedMessageIds((prevIds) => {
+          const updatedIds = new Set(prevIds);
+          newMessages.forEach((msg) => updatedIds.add(msg.id_message));
+          return updatedIds;
+        });
       } else {
         console.log('No new messages to update.');
       }
     }
-  }, [messages, selectedContact]);
+  }, [messages, selectedContact, processedMessageIds]);
 
   useEffect(() => {
     console.log('Updated presence:', presence);

@@ -10,6 +10,7 @@ class MessageHandler:
         self.client = client
         self.comm_manager = comm_manager
         self.message_queue = asyncio.Queue()
+        self.processed_message_ids = set()
 
     async def receive_messages(self):
         while True:
@@ -53,13 +54,29 @@ class MessageHandler:
             messages = split_xml_messages(message)
             for messag in messages:
                 root = ET.fromstring(messag)
+                
+                # Buscar el atributo `id` del mensaje
+                message_id = root.attrib.get('id')
+                if not message_id:
+                    print("No message ID found, skipping message.")
+                    continue
+                
+                # Verificar si el mensaje ya ha sido procesado
+                if message_id in self.processed_message_ids:
+                    print(f"Message with ID {message_id} has already been processed, skipping.")
+                    continue
+                
+                # Almacenar el ID del mensaje en el conjunto
+                self.processed_message_ids.add(message_id)
+                
                 # Buscar el elemento <body> sin importar el espacio de nombres
                 body = root.find(".//body")
                 from_attr = root.attrib.get('from', 'unknown')
                 if body is not None:
                     print(f"Chat message body: {body.text}")
                     print(f"Message received from: {from_attr}")
-                    await self.comm_manager.handle_received_message(body.text, from_attr)
+                    print(f"Message ID: {message_id}")
+                    await self.comm_manager.handle_received_message(body.text, from_attr, message_id)
                 else:
                     print("Chat message body not found")
         except ET.ParseError:

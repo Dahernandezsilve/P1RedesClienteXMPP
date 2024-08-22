@@ -128,11 +128,12 @@ class CommunicationManager:
         # Lógica para enviar archivos
         pass
 
-    async def handle_received_message(self, message: str, from_attr: str) -> str:
+    async def handle_received_message(self, message: str, from_attr: str, id_message: str) -> str:
         print(f"Handling received message: {message}")
         json_message = {
             "message": message,
-            "from": from_attr
+            "from": from_attr,
+            "id_message": id_message 
         }
 
         if json_message:
