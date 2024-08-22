@@ -133,3 +133,52 @@
   color: #ffffff;
   margin-left: 1vw;
 }
+
+/* Estilo base para el badge */
+.notification-badge {
+  background-color: rgb(0, 0, 0); /* Color por defecto cuando no hay notificaciones */
+  color: white;
+  border-radius: 50%;
+  margin-left: 1vw;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  position: relative;
+  transition: background-color 0.3s ease; /* Transición suave para el cambio de color */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3); /* Sombra sutil */
+}
+
+/* Estilo cuando hay notificaciones (por ejemplo, si `unreadMessages` no es 0) */
+.notification-badge.has-notifications {
+  background-color: rgb(255, 0, 0); /* Color cuando hay notificaciones */
+  animation: pulse 1.5s infinite; /* Animación de pulso */
+}
+
+/* Animación de pulso */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Añadir un contador para cuando hay más de un mensaje */
+.notification-badge.count {
+  background-color: rgb(255, 0, 0); /* Color para badge con notificaciones */
+  color: white;
+  font-size: 10px;
+  width: 24px;
+  height: 24px;
+}

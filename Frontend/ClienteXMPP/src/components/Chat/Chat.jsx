@@ -12,6 +12,7 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
   const [selectedContact, setSelectedContact] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [processedMessageIds, setProcessedMessageIds] = useState(new Set()); // Estado para almacenar los ID de mensajes procesados
+  const [unreadMessages, setUnreadMessages] = useState({});
 
   const handleSend = () => {
     if (message.trim() && recipient.trim()) {
@@ -61,21 +62,23 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
     console.log('Contact selected:', contact);
     setSelectedContact(contact);
     setRecipient(contact);
+    // Resetear el contador de mensajes no vistos al seleccionar un contacto
+    setUnreadMessages((prevUnreadMessages) => ({
+      ...prevUnreadMessages,
+      [contact]: 0,
+    }));
   };
 
   useEffect(() => {
     if (messages.length > 0) {
       console.log('New messages received:', messages);
-    }
 
-    if (selectedContact) {
-      console.log('Selected contact:', selectedContact);
-
+      // Filtrar los mensajes nuevos y actualizarlos en el estado
       const newMessages = messages.filter((msg) => {
         // Se asume que el receptor es el usuario autenticado si no se especifica
         const receiver = msg.receiver || user;
-        const senderMatches = msg.sender.split('/')[0] === selectedContact.split('/')[0];
-        const receiverMatches = receiver.split('@')[0] === selectedContact.split('@')[0];
+        const senderMatches = msg.sender.split('/')[0] === (selectedContact.split('/')[0] || '');
+        const receiverMatches = receiver.split('/')[0] === (receiver.split('/')[0] || '');
 
         // Verificar si el mensaje ya fue procesado
         const isDuplicate = processedMessageIds.has(msg.id_message);
@@ -83,21 +86,24 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
         return (senderMatches || receiverMatches) && !isDuplicate;
       });
 
+      console.log('New messages:', newMessages);
       if (newMessages.length > 0) {
         console.log('Filtered new messages:', newMessages);
 
         // Actualizar el historial de mensajes y almacenar los ID procesados
         setMessageHistories((prevHistories) => {
-          const updatedHistories = {
-            ...prevHistories,
-            [selectedContact]: [
-              ...(prevHistories[selectedContact] || []),
-              ...newMessages.map((msg) => ({
+          const updatedHistories = { ...prevHistories };
+
+          newMessages.forEach((msg) => {
+            const sender = msg.sender.split('/')[0]; // Obtener el contacto del remitente
+            updatedHistories[sender] = [
+              ...(updatedHistories[sender] || []),
+              {
                 ...msg,
                 receivedAt: new Date().toISOString(), // Marca cuando se recibió el mensaje
-              })),
-            ],
-          };
+              },
+            ];
+          });
 
           console.log('Updated message histories with new messages:', updatedHistories);
           return updatedHistories;
@@ -108,6 +114,20 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
           const updatedIds = new Set(prevIds);
           newMessages.forEach((msg) => updatedIds.add(msg.id_message));
           return updatedIds;
+        });
+
+        // Actualizar el contador de mensajes no vistos para todos los contactos
+        setUnreadMessages((prevUnreadMessages) => {
+          const updatedUnreadMessages = { ...prevUnreadMessages };
+          newMessages.forEach((msg) => {
+            const contact = msg.sender.split("/")[0]; // Asumiendo que todos los mensajes son del mismo contacto
+            console.log('Updating unread messages for:', contact);
+            console.log('Selected contact on unread:', selectedContact);
+            if (selectedContact !== contact) {
+              updatedUnreadMessages[contact] = (updatedUnreadMessages[contact] || 0) + 1;
+            }
+          });
+          return updatedUnreadMessages;
         });
       } else {
         console.log('No new messages to update.');
@@ -121,7 +141,7 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
 
   return (
     <div className="chat-container">
-      <Slidebar contacts={contacts} onSelectContact={handleSelectContact} presence={presence} />
+      <Slidebar contacts={contacts} onSelectContact={handleSelectContact} presence={presence} unreadMessages={unreadMessages}/>
       <div className="chat-content">
         <div className="chat-header">
           <h2>{selectedContact ? selectedContact.split('@')[0] : 'Select a Contact'}'s Chat</h2>
