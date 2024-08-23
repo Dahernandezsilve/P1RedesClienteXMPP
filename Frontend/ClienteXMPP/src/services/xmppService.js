@@ -126,6 +126,15 @@ export const sendMessage = (to, body) => {
     }
 };
 
+export const updatePresence = (presence, status) => {
+    if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
+        const message = { action: "set_presence", presence, status };
+        loginSocket.send(JSON.stringify(message));
+    } else {
+        console.error('WebSocket is not open. Unable to set presence.');
+    }
+};
+
 export const registerUser = (username, password, name, email ) => {
     return new Promise((resolve, reject) => {
         const registerSocket = new WebSocket(`${WS_URL}/register`);

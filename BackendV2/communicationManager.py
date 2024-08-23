@@ -116,9 +116,21 @@ class CommunicationManager:
         # Lógica para unirse a un grupo
         pass
 
-    def set_presence(self, presence: str) -> None:
-        # Lógica para definir presencia
-        pass
+    def set_presence(self, presence: str, status: str = 'unknown') -> None:
+        valid_presence_types = ['available', 'away', 'dnd', 'xa', 'unknown', 'chat']
+        
+        if presence not in valid_presence_types:
+            raise ValueError(f"Invalid presence type: {presence}")
+        
+        xmlPresence = (
+            f'<presence>\n'
+            f'    <show>{presence}</show>\n'
+            f'    <status>{status}</status>\n'
+            f'</presence>'
+        )
+
+        self.client.send(xmlPresence)
+        
 
     def send_notification(self, to: str, message: str) -> None:
         # Lógica para enviar notificaciones

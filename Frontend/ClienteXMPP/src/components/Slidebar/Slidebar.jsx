@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Slidebar.css';
 import Header from '@components/Header';
-import { addContact } from '@services/xmppService'; // Importa la función para añadir contacto
+import { addContact, updatePresence } from '@services/xmppService'; // Asegúrate de importar la función para actualizar presencia
 
 const defaultProfileImage = './usuario.png';
 const notificationSound = new Audio('./popSound.mp3'); // Ruta al archivo de sonido
@@ -9,6 +9,9 @@ const notificationSound = new Audio('./popSound.mp3'); // Ruta al archivo de son
 const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
   const [newContact, setNewContact] = useState(''); // Estado para el nuevo contacto
   const [customMessage, setCustomMessage] = useState(''); // Estado para el mensaje personalizado
+  const [isPresenceMenuOpen, setIsPresenceMenuOpen] = useState(false); // Estado para mostrar/ocultar menú de presencia
+  const [presenceMessage, setPresenceMessage] = useState('unknown'); // Estado para el mensaje de presencia
+  const [status, setStatus] = useState(''); // Estado para el estado de presencia
 
   const handleAddContact = () => {
     if (newContact.trim()) {
@@ -18,6 +21,16 @@ const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
     } else {
       console.error('Please enter a valid contact username');
     }
+  };
+
+  const handleTogglePresenceMenu = () => {
+    setIsPresenceMenuOpen(!isPresenceMenuOpen);
+  };
+
+  const handlePresenceChange = (message) => {
+    setPresenceMessage(message);
+    updatePresence(message, status); // Llama a la función para actualizar el mensaje de presencia en el servidor
+    setIsPresenceMenuOpen(false); // Cierra el menú después de seleccionar un mensaje
   };
 
   // Efecto para reproducir el sonido cuando llegan nuevos mensajes
@@ -31,7 +44,34 @@ const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
 
   return (
     <div className="slidebar">
-      <Header />
+      <div className="header-actions">
+        <Header /> 
+        <button onClick={handleTogglePresenceMenu} className="presence-button">
+            <img src="./engranajes3.gif" alt="Settings" className="gear-icon" /> {/* Cambia la ruta según tu archivo de icono */}
+        </button>
+      </div>
+      <div className="header-actions">
+      
+        {isPresenceMenuOpen && (
+          <div className="presence-menu">
+            <button onClick={() => handlePresenceChange('available')}>Available</button>
+            <button onClick={() => handlePresenceChange('dnd')}>Busy</button>
+            <button onClick={() => handlePresenceChange('away')}>Away</button>
+            <button onClick={() => handlePresenceChange('xa')}>Not available</button>
+            <button onClick={() => handlePresenceChange('chat')}>Chat</button>
+            <input
+              type="text"
+              placeholder="Custom Status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="custom-status-input"
+            />
+            <button  className='changeStatus' onClick={() => handlePresenceChange(presenceMessage)}>
+              Change Status
+            </button>
+          </div>
+        )}
+      </div>
       <ul className="contacts-list">
         {contacts.map((contact, index) => {
           // Obtener el estado de presencia del contacto o establecer un valor predeterminado

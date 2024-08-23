@@ -149,6 +149,14 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
     console.log('Updated presence:', presence);
   }, [presence]);
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevenir el salto de línea en el input
+      handleSend();
+      setMessage(''); // Limpiar el campo de entrada después de enviar el mensaje (opcional)
+    }
+  };
+
   return (
     <div className="chat-container">
       <Slidebar contacts={contacts} onSelectContact={handleSelectContact} presence={presence} unreadMessages={unreadMessages}/>
@@ -173,6 +181,7 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             className="lego-input"
+            onKeyDown={handleKeyDown}
           />
           <button onClick={handleSend} className="lego-button">Send</button>
         </div>

@@ -88,6 +88,17 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     error_message = {"status": "error", "message": f"Failed to delete account: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
 
+            elif message["action"] == "set_presence":
+                try:
+                    presence = message["presence"]
+                    status = message["status"]
+                    comm_manager.set_presence(presence, status)
+                    response = {"status": "success", "message": f"Presence changed successfully"}
+                    await websocket.send_text(json.dumps(response))
+                except Exception as e:
+                    error_message = {"status": "error", "message": f"Failed to change presence: {str(e)}"}
+                    await websocket.send_text(json.dumps(error_message))
+
         except WebSocketDisconnect:
             break
         except Exception as e:

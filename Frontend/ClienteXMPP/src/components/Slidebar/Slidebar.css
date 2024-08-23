@@ -182,3 +182,75 @@
   width: 24px;
   height: 24px;
 }
+
+
+/* Estilo para el botón de engranaje */
+.header-actions {
+  display: flex;
+  align-items: center;
+  position: relative; /* Para posicionar el menú desplegable */
+}
+
+.presence-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: #fff;
+  margin-top: 1vh;
+  margin-right: 10px;
+}
+
+.presence-button:hover {
+  background: #ff0000;
+  border: none;
+  cursor: pointer;
+  margin-top: 1vh;
+  font-size: 0.8rem;
+  color: #fff;
+  margin-right: 10px;
+}
+
+
+.gear-icon {
+  width: 50px;
+  height: 40px;
+}
+
+/* Estilo para el menú de presencia */
+.presence-menu {
+  position: absolute;
+  top: -1.0vh;
+  right: 4vw;
+  background: #333;
+  border: 1px solid #000;
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.presence-menu button {
+  display: block;
+  background: #333;
+  border: none;
+  color: #fff;
+  padding: 10px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.presence-menu button:hover {
+  background: #ff0000;
+}
+
+.custom-status-input {
+  width: 90;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #000;
+}
