@@ -43,7 +43,7 @@
   display: flex;
   flex-direction: column; /* Asegúrate de que los mensajes estén en columna */
   flex: 1;
-  height: 81vh;
+  height: 79.5vh;
   padding: 10px;
   overflow-y: auto;
   background: url('/background.gif');
@@ -123,3 +123,40 @@
   background-color: #ff2600;
 }
 
+
+.legoFile input[type="file"] {
+  background: #000000;
+  opacity: 0;
+  width: 100%;
+  cursor: pointer;
+}
+
+.legoFile {
+  width: 18%;
+  height: 100%;;
+  
+}
+
+.custom-file-button {
+  position: relative;
+  top: 1.2vh;
+  padding-top: 2vh;
+  width: 2vw;
+  padding-bottom: 1.8vh;
+  padding-left: 1vw;
+  padding-right: 1vw;
+  border: 2px solid #5a5b5c;
+  border-radius: 5px;
+  height: 100%;
+  background-color: #5a5b5c;
+  color: #fff;
+  font-size: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.custom-file-button:hover {
+  background-color: #ff0000;
+  border-color: #ff0000;
+}

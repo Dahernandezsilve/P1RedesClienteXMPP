@@ -4,6 +4,9 @@ from typing import Optional
 from communicationManager import CommunicationManager
 from utils import split_xml_messages, split_presence_messages, split_all_messages
 import json
+import requests
+import base64
+
 
 class MessageHandler:
     def __init__(self, client, comm_manager: CommunicationManager) -> None:
@@ -131,8 +134,28 @@ class MessageHandler:
                     # Manejar otros tipos de IQ si es necesario
                     print(f"Unhandled IQ message query: {ET.tostring(root, encoding='unicode')}")
             elif iq_type == 'result':
-                # Manejar mensajes IQ de tipo result si es necesario
                 print(f"Handled IQ message type result: {ET.tostring(root, encoding='unicode')}")
+                namespace = '{urn:xmpp:http:upload:0}'
+                
+                slot = root.find(f'.//{namespace}slot')
+                if slot is not None:
+
+                    put_element = slot.find(f'{namespace}put')
+                    get_element = slot.find(f'{namespace}get')
+                    
+                    put_url = put_element.attrib.get('url') if put_element is not None else None
+                    get_url = get_element.attrib.get('url') if get_element is not None else None
+
+                    if put_url and get_url:
+                        print(f"Received upload URLs:\nPUT: {put_url}\nGET: {get_url}")
+
+                        # Llamar a upload_file con las URLs obtenidas
+                        await self.upload_file(put_url, get_url)
+                    else:
+                        print("Error: Upload URLs not found in the IQ result")
+                else:
+                    print("Error: 'slot' element not found in the IQ result")
+
             elif iq_type == 'error':
                 # Manejar mensajes IQ de tipo error
                 error_code = root.find('.//error').attrib.get('code', 'unknown')
@@ -146,6 +169,49 @@ class MessageHandler:
             print("Error parsing IQ message")
         except Exception as e:
             print(f"Unexpected error processing IQ message: {e}")
+
+    async def set_upload_callback(self, callback) -> None:
+        self.client.uploadCallback = callback
+
+    async def upload_file(self, put_url: str, get_url: str) -> None:
+        if self.client.file_data is not None:
+            try:
+                # Subir el archivo usando requests
+                print("Uploading file...")
+                print(f"PUT URL: {put_url}")
+                print(f"File size: {self.client.file_data} bytes")
+                headers = {'Content-Type': 'application/octet-stream'}
+                file_data = base64.b64decode(self.client.file_data)
+                response = requests.put(put_url, data=file_data, headers=headers, verify=False)
+                print(f"Upload response: {response}")
+                if response.status_code == 201:
+                    print("File uploaded successfully")
+                    await self.send_file_message(get_url, self.client.file_meta.get('to'))
+                else:
+                    print(f"Failed to upload file: {response.status_code}")
+            except Exception as e:
+                print(f"Error during file upload: {e}")
+        else:
+            print("Error: No file data available for upload.")
+
+    async def send_file_message(self, get_url: str, to: str) -> None:
+        # Construir el mensaje de chat con la URL del archivo
+        message = f"""
+        <message type='chat' to='{to}' from='{self.client.username}'>
+            <body>{get_url}</body>
+        </message>
+        """
+        try:
+            # Enviar el mensaje al destinatario
+            self.client.send(message)
+            print(f"File message sent to {to} with URL: {get_url}")
+            self.client.file_data = None
+            self.client.file_meta = {}
+            response = {"status": "success", "action": "fileUrl", "url": get_url}
+            await self.websocket.send_text(json.dumps(response))
+        except Exception as e:
+            print(f"Error sending file message: {e}")
+
 
     async def handle_presence_message(self, message: str):
         print(f"Processing presence message: {message}")

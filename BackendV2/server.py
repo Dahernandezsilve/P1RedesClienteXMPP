@@ -88,6 +88,21 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     error_message = {"status": "error", "message": f"Failed to delete account: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
 
+            elif message["action"] == "send_file":
+                try:
+                    to = message["to"]
+                    fileName = message["fileName"]
+                    fileType = message["fileType"]
+                    fileSize = message["fileSize"]
+                    fileData = message["fileData"]
+                    await comm_manager.send_file(to, fileName, fileSize, fileType, fileData)
+
+                    response = {"status": "success", "message": f"File {fileName} sended successfully"}
+                    await websocket.send_text(json.dumps(response))
+                except Exception as e:
+                    error_message = {"status": "error", "message": f"Failed to send file: {str(e)}"}
+                    await websocket.send_text(json.dumps(error_message))
+
             elif message["action"] == "set_presence":
                 try:
                     presence = message["presence"]

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './Chat.css';
-import { sendMessage } from '@services/xmppService';
+import { sendMessage, sendFile } from '@services/xmppService'; 
 import Slidebar from '@components/Slidebar';
 import Modal from '@components/Modal';
 import { showAllUsers } from '../../services/xmppService';
-import { deleteAcount } from '../../services/xmppService';	
+import { deleteAcount } from '../../services/xmppService';
 
 const Chat = ({ user, messages, contacts, usersList, presence }) => {
   const [message, setMessage] = useState('');
@@ -14,7 +14,15 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [processedMessageIds, setProcessedMessageIds] = useState(new Set()); 
   const [unreadMessages, setUnreadMessages] = useState({});
-  const [hasFetchedUsers, setHasFetchedUsers] = useState(false); // Estado para controlar la ejecución de showAllUsers
+  const [hasFetchedUsers, setHasFetchedUsers] = useState(false);
+  const [file, setFile] = useState(null); // Nuevo estado para manejar el archivo
+
+  const formatFileName = (fileName) => {
+    if (fileName.length > 19) {
+      return `${fileName.slice(0, 16)}...`;
+    }
+    return fileName;
+  };
 
   const handleSend = () => {
     if (message.trim() && recipient.trim()) {
@@ -24,60 +32,62 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
         timestamp: new Date().toISOString(),
       };
 
-      console.log('Sending message:', newMessage);
-      console.log('Recipient:', recipient);
-
       setMessageHistories((prevHistories) => {
         const updatedHistories = {
           ...prevHistories,
           [recipient]: [...(prevHistories[recipient] || []), newMessage],
         };
-
-        console.log('Updated message histories:', updatedHistories);
         return updatedHistories;
       });
 
       sendMessage(recipient, message);
       setMessage('');
+    }
+  };
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleFileSend = () => {
+    if (file && recipient.trim()) {
+      sendFile(recipient, file).then(() => {
+        console.log('File sent successfully');
+        setFile(null); // Limpiar el archivo después de enviarlo
+      }).catch((error) => {
+        console.error('Failed to send file:', error);
+      });
     } else {
-      console.log('Message or recipient is empty.');
+      console.log('No file selected or recipient is empty.');
     }
   };
 
   const deleteAccount = async () => {
     try {
-      console.log('Deleting account...');
-      await deleteAcount(); // Llama a la función del servicio para eliminar la cuenta
-      console.log('Account deleted successfully.');
-      window.location.reload(); // Recargar la página después de eliminar la cuenta
+      await deleteAcount();
+      window.location.reload();
     } catch (error) {
       console.error('Failed to delete account:', error);
     }
   };
 
   const openModal = () => {
-    console.log('Opening modal to show all users.');
-    
     if (!hasFetchedUsers) {
-      showAllUsers(); // Ejecutar solo una vez
+      showAllUsers();
       setHasFetchedUsers(true);
     }
-
     setModalOpen(true);
   };
 
   const closeModal = () => {
-    console.log('Closing modal.');
     setModalOpen(false);
   };
 
   const handleLogout = () => {
-    console.log('Logging out.');
     window.location.reload();
   };
 
   const handleSelectContact = (contact) => {
-    console.log('Contact selected:', contact);
     setSelectedContact(contact);
     setRecipient(contact);
     setUnreadMessages((prevUnreadMessages) => ({
@@ -88,8 +98,6 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
 
   useEffect(() => {
     if (messages.length > 0) {
-      console.log('New messages received:', messages);
-
       const newMessages = messages.filter((msg) => {
         const receiver = msg.receiver || user;
         const senderMatches = msg.sender.split('/')[0] === (selectedContact.split('/')[0] || '');
@@ -99,13 +107,9 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
         return (senderMatches || receiverMatches) && !isDuplicate;
       });
 
-      console.log('New messages:', newMessages);
       if (newMessages.length > 0) {
-        console.log('Filtered new messages:', newMessages);
-
         setMessageHistories((prevHistories) => {
           const updatedHistories = { ...prevHistories };
-
           newMessages.forEach((msg) => {
             const sender = msg.sender.split('/')[0];
             updatedHistories[sender] = [
@@ -116,8 +120,6 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
               },
             ];
           });
-
-          console.log('Updated message histories with new messages:', updatedHistories);
           return updatedHistories;
         });
 
@@ -131,16 +133,12 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
           const updatedUnreadMessages = { ...prevUnreadMessages };
           newMessages.forEach((msg) => {
             const contact = msg.sender.split("/")[0];
-            console.log('Updating unread messages for:', contact);
-            console.log('Selected contact on unread:', selectedContact);
             if (selectedContact !== contact) {
               updatedUnreadMessages[contact] = (updatedUnreadMessages[contact] || 0) + 1;
             }
           });
           return updatedUnreadMessages;
         });
-      } else {
-        console.log('No new messages to update.');
       }
     }
   }, [messages, selectedContact, processedMessageIds]);
@@ -151,9 +149,9 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
-      e.preventDefault(); // Prevenir el salto de línea en el input
+      e.preventDefault();
       handleSend();
-      setMessage(''); // Limpiar el campo de entrada después de enviar el mensaje (opcional)
+      setMessage('');
     }
   };
 
@@ -183,6 +181,13 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
             className="lego-input"
             onKeyDown={handleKeyDown}
           />
+          <div className="legoFile">
+            <label htmlFor="file-upload" className="custom-file-button">
+              {file ? formatFileName(file.name) : 'Seleccionar archivo'}
+            </label>
+            <input id="file-upload" type="file" onChange={handleFileChange} />
+          </div>
+          <button onClick={handleFileSend} className="lego-button" style={{marginRight: '10px'}}>file</button>
           <button onClick={handleSend} className="lego-button">Send</button>
         </div>
       </div>

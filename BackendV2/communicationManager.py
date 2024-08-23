@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 import re
 import json
 import asyncio
+import requests
 
 class CommunicationManager:
     def __init__(self, client: XMPPClient, websocket = None) -> None:
@@ -21,7 +22,6 @@ class CommunicationManager:
                     name = item.get("name", "")
                     subscription = item.get("subscription", "")
                     
-                    # Solo añadir usuarios con una suscripción activa
                     if subscription != "none":
                         users.append({"jid": jid, "name": name})
             except ET.ParseError:
@@ -30,7 +30,6 @@ class CommunicationManager:
         return users
 
     def search_all_users(self, filter: str = '*') -> list:
-        # Construir la solicitud de búsqueda para el servicio específico
         search_query = f"""<iq type='set' from='{self.client.username}@{self.client.server}/testWeb' to='search.alumchat.lol' id='search1' xml:lang='en'>
             <query xmlns='jabber:iq:search'>
                 <x xmlns='jabber:x:data' type='submit'>
@@ -53,13 +52,11 @@ class CommunicationManager:
             </query>
         </iq>"""
 
-        # Enviar la solicitud al servidor
         self.client.send(search_query)
         search_response = self.client.receive()
 
         user_pattern = re.compile(r'<item>.*?<field var="jid"><value>(.*?)</value></field>.*?<field var="Username"><value>(.*?)</value></field>.*?<field var="Name"><value>(.*?)</value></field>.*?<field var="Email"><value>(.*?)</value></field>.*?</item>', re.DOTALL)
         
-        # Buscar todos los usuarios en el XML
         matches = user_pattern.findall(search_response)
         
         users = []
@@ -76,10 +73,8 @@ class CommunicationManager:
         return users
         
     def add_contact(self, username: str, custom_message: str = "") -> None:
-        # Construir el JID completo del usuario a añadir
         user_jid = f"{username}@{self.client.server}"
 
-        # Solicitud para agregar al contacto al roster
         add_roster_query = f"""
         <iq type='set' id='add_contact_1'>
             <query xmlns='jabber:iq:roster'>
@@ -89,17 +84,14 @@ class CommunicationManager:
             </query>
         </iq>"""
 
-        # Enviar la solicitud al servidor
         self.client.send(add_roster_query)
 
-        # Solicitar la presencia suscrita con un mensaje personalizado
         subscribe_presence = f"""
         <presence to='{user_jid}' type='subscribe'>
             <status>{custom_message}</status>
         </presence>
         """
 
-        # Enviar la solicitud al servidor
         self.client.send(subscribe_presence)
 
         print(f"Contact {user_jid} added successfully with message: {custom_message}")
@@ -136,9 +128,26 @@ class CommunicationManager:
         # Lógica para enviar notificaciones
         pass
 
-    def send_file(self, to: str, file_path: str) -> None:
-        # Lógica para enviar archivos
-        pass
+    async def send_file(self, to: str, file_name: str, file_size: int, file_type: str, file_data: bytes) -> None:
+        request_slot = f"""
+        <iq type='get' to='httpfileupload.alumchat.lol' id='upload-request'>
+            <request xmlns='urn:xmpp:http:upload:0' filename='{file_name}' size='{file_size}' content-type='{file_type}' />
+        </iq>
+        """
+        
+        try:
+            self.client.send(request_slot)
+            self.client.file_data = file_data
+            self.client.file_meta = {
+                'to': to,
+                'filename': file_name,
+                'size': file_size,
+                'type': file_type,
+            }
+            
+        except Exception as e:
+            print(f"Error sending file: {e}")
+
 
     async def handle_received_message(self, message: str, from_attr: str, id_message: str) -> str:
         print(f"Handling received message: {message}")
@@ -151,4 +160,4 @@ class CommunicationManager:
         if json_message:
             print(f"Sending message to WebSocket: {json_message}")
             await self.websocket.send_text(json.dumps(json_message))
-        await asyncio.sleep(1)  # Evitar un ciclo de CPU intensome
+        await asyncio.sleep(1) 

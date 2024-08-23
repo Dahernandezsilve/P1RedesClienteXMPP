@@ -126,6 +126,33 @@ export const sendMessage = (to, body) => {
     }
 };
 
+export const sendFile = async (to, file) => {
+    if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
+        try {
+            // Convertir el archivo a Base64
+            const fileReader = new FileReader();
+            fileReader.onloadend = () => {
+                const base64Data = fileReader.result.split(',')[1]; // Extraer solo los datos Base64
+                const message = {
+                    action: "send_file",
+                    to,
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileSize: file.size,
+                    fileData: base64Data
+                };
+                loginSocket.send(JSON.stringify(message));
+            };
+            fileReader.readAsDataURL(file);
+        } catch (error) {
+            console.error('Error sending file:', error);
+        }
+    } else {
+        console.error('WebSocket is not open. Unable to send file.');
+    }
+};
+
+
 export const updatePresence = (presence, status) => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
         const message = { action: "set_presence", presence, status };

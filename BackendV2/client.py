@@ -15,6 +15,9 @@ class XMPPClient:
         self.username = username
         self.password = password
         self.resource = resource
+        self.file_data = None
+        self.uploadCallback = None
+        self.file_meta = {} 
         self.sock: Optional[socket.socket] = None
         self.bufferMessagesToClean = []
 
