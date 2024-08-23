@@ -160,3 +160,20 @@
   background-color: #ff0000;
   border-color: #ff0000;
 }
+
+
+/* Estilos para el texto del mensaje */
+.chat-text {
+  word-break: break-word; /* Permite que el texto largo se ajuste */
+  white-space: pre-wrap; /* Mantiene los espacios y saltos de línea */
+  margin-top: 5px; /* Espacio superior para separar del nombre del remitente */
+  font-size: 14px; /* Tamaño de fuente para los mensajes */
+}
+
+/* Estilos para las imágenes dentro de los mensajes */
+.chat-image {
+  max-width: 100%; /* Limita el ancho máximo de la imagen para que se ajuste al contenedor */
+  height: auto; /* Mantiene la proporción de la imagen */
+  border-radius: 5px; /* Bordes redondeados para la imagen */
+  margin-top: 5px; /* Espacio superior para separar del texto del mensaje */
+}

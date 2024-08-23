@@ -3,7 +3,7 @@ import { connectXmpp, registerUser } from '@services/xmppService';
 import Loader from '@components/Loader';
 import './Login.css';
 
-const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence }) => {
+const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence, setMessageHistories }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -21,7 +21,7 @@ const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence })
 
     setIsLoading(true);
     try {
-      const response = await connectXmpp(username, password, setMessages, setContacts, setUsersList, setPresence);
+      const response = await connectXmpp(username, password, setMessages, setContacts, setUsersList, setPresence, setMessageHistories);
       console.log('Login response:', response);
       if (response.success) {
         setUser(username);

@@ -6,10 +6,9 @@ import Modal from '@components/Modal';
 import { showAllUsers } from '../../services/xmppService';
 import { deleteAcount } from '../../services/xmppService';
 
-const Chat = ({ user, messages, contacts, usersList, presence }) => {
+const Chat = ({ user, messages, contacts, usersList, presence, messageHistories, setMessageHistories }) => {
   const [message, setMessage] = useState('');
   const [recipient, setRecipient] = useState('');
-  const [messageHistories, setMessageHistories] = useState({});
   const [selectedContact, setSelectedContact] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [processedMessageIds, setProcessedMessageIds] = useState(new Set()); 
@@ -141,6 +140,8 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
         });
       }
     }
+    console.log('Updated message histories:', messageHistories);
+    console.log('Updated messages:', messages);
   }, [messages, selectedContact, processedMessageIds]);
 
   useEffect(() => {
@@ -153,6 +154,41 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
       handleSend();
       setMessage('');
     }
+  };
+
+  const renderMessageContent = (text) => {
+    const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
+    const imageExtensions = /\.(jpg|jpeg|png|gif|bmp|webp)$/i;
+    const pdfExtension = /\.pdf$/i;
+    const pdfImage = './pdf.png';
+
+    if (urlPattern.test(text)) {
+      return text.split(urlPattern).map((part, index) => {
+        if (urlPattern.test(part)) {
+          const isImage = imageExtensions.test(part);
+          const isPdf = pdfExtension.test(part);
+          return isImage ? (
+            <a key={index} href={part} target="_blank" rel="noopener noreferrer">
+              <img src={part} alt={`Image ${index}`} style={{ maxWidth: '50%', maxHeight: '100px', margin: '10px 0', cursor: 'pointer', borderRadius: '10px' }} />
+            </a>
+          ) : isPdf ? (
+            <a key={index} href={part} target="_blank" rel="noopener noreferrer">
+              <img src={pdfImage} alt="PDF" style={{ maxWidth: '40px', cursor: 'pointer' }} />
+            </a>
+          ) : (
+            <a key={index} href={part} target="_blank" rel="noopener noreferrer">
+              {part}
+            </a>
+          );
+        } else {
+          if (part === 'https') {
+            return null
+          }
+          return part;
+        }
+      });
+    }
+    return text;
   };
 
   return (
@@ -168,7 +204,10 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
         <div className="chat-messages">
           {(selectedContact && messageHistories[selectedContact] || []).map((msg, index) => (
             <div key={index} className={`chat-message ${msg.sender === user ? 'sent' : 'received'}`}>
-              <span className="chat-sender">{msg.sender ? msg.sender.split('@')[0] : 'Unknown'}</span>: {msg.text}
+              <span className="chat-sender">{msg.sender ? msg.sender.split('@')[0] : 'Unknown'}</span>: 
+              <span className="chat-text">
+                {renderMessageContent(msg.text)}
+              </span>
             </div>
           ))}
         </div>

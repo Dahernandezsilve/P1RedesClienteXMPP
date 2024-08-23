@@ -6,7 +6,7 @@ from utils import split_xml_messages, split_presence_messages, split_all_message
 import json
 import requests
 import base64
-
+import uuid
 
 class MessageHandler:
     def __init__(self, client, comm_manager: CommunicationManager) -> None:
@@ -195,22 +195,43 @@ class MessageHandler:
             print("Error: No file data available for upload.")
 
     async def send_file_message(self, get_url: str, to: str) -> None:
-        # Construir el mensaje de chat con la URL del archivo
+        # Generar un identificador único para el mensaje
+        id_message = str(uuid.uuid4())
+        
+        # Construir el mensaje de chat con la URL del archivo y el id_message
         message = f"""
-        <message type='chat' to='{to}' from='{self.client.username}'>
+        <message type='chat' to='{to}' from='{self.client.username}' id='{id_message}'>
             <body>{get_url}</body>
         </message>
         """
         try:
             # Enviar el mensaje al destinatario
             self.client.send(message)
-            print(f"File message sent to {to} with URL: {get_url}")
+            print(f"File message sent to {to} with URL: {get_url} and ID: {id_message}")
+            
+            # Limpiar datos del archivo después de enviar
             self.client.file_data = None
             self.client.file_meta = {}
-            response = {"status": "success", "action": "fileUrl", "url": get_url}
+            
+            # Enviar una respuesta al cliente con el estado y el id_message
+            response = {
+                "status": "success",
+                "action": "fileUrl",
+                "url": get_url,
+                "id_message": id_message,
+                'to': to
+            }
             await self.websocket.send_text(json.dumps(response))
         except Exception as e:
             print(f"Error sending file message: {e}")
+            # Enviar una respuesta de error al cliente
+            response = {
+                "status": "error",
+                "action": "fileUrl",
+                "error": str(e),
+                "id_message": id_message
+            }
+        await self.websocket.send_text(json.dumps(response))
 
 
     async def handle_presence_message(self, message: str):

@@ -4,7 +4,9 @@ const WS_URL = 'ws://localhost:8000'; // URL de tu servidor FastAPI WebSocket
 
 let loginSocket;
 
-export const connectXmpp = (username, password, setMessages, setContacts, setUsersList, setPresence) => {
+const processedMessageIds = new Set();
+
+export const connectXmpp = (username, password, setMessages, setContacts, setUsersList, setPresence, setMessageHistories) => {
     return new Promise((resolve, reject) => {
         loginSocket = new WebSocket(`${WS_URL}/ws/${username}/${password}`);
 
@@ -35,6 +37,24 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                     // Aquí podrías actualizar la lista de contactos o notificar al usuario
                 } else {
                     console.error('Failed to add contact:', message.message);
+                }
+            }
+            else if (message.action === "fileUrl") {
+                console.log('File URL received:', message.url);
+                if (!processedMessageIds.has(message.id_message)) {
+                    setMessageHistories((prevHistories) => {
+                        const updatedHistories = {
+                            ...prevHistories,
+                            [message.to]: [
+                                ...(prevHistories[message.to] || []),
+                                { sender: username, text: message.url }
+                            ],
+                        };
+                        return updatedHistories;
+                    });
+                    processedMessageIds.add(message.id_message);
+                } else {
+                    console.log(`Message with ID ${message.id_message} already processed.`);
                 }
             } else if (message.action === "presence_update") {
                 console.log('Presence update received:', message.presence);
