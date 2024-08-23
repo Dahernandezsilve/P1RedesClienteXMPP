@@ -7,6 +7,8 @@ const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence })
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,7 +18,7 @@ const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence })
       setError('Username and password are required.');
       return;
     }
-  
+
     setIsLoading(true);
     try {
       const response = await connectXmpp(username, password, setMessages, setContacts, setUsersList, setPresence);
@@ -25,7 +27,7 @@ const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence })
         setUser(username);
         setError('');
       } else {
-        setError(response.error || 'Login failed.'); // Muestra el error si el login falla
+        setError(response.error || 'Login failed.');
       }
     } catch (err) {
       setError('Login failed: ' + err.message);
@@ -35,13 +37,18 @@ const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence })
   };
 
   const handleSignUp = async () => {
+    if (!username || !password || !confirmPassword || !name || !email) {
+      setError('All fields are required.');
+      return;
+    }
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
+
     setIsLoading(true);
     try {
-      await registerUser(username, password);
+      await registerUser(username, password, name, email); // Enviar nombre y email al servicio
       // Si el registro fue exitoso, realiza el login automáticamente
       await handleLogin();
     } catch (err) {
@@ -64,6 +71,26 @@ const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence })
             className="login-input"
             disabled={isLoading}
           />
+          {isSignUp && (
+            <>
+              <input
+                type="text"
+                placeholder="Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="login-input"
+                disabled={isLoading}
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="login-input"
+                disabled={isLoading}
+              />
+            </>
+          )}
           <input
             type="password"
             placeholder="Password"

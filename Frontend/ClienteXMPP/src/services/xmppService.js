@@ -126,12 +126,12 @@ export const sendMessage = (to, body) => {
     }
 };
 
-export const registerUser = (username, password) => {
+export const registerUser = (username, password, name, email ) => {
     return new Promise((resolve, reject) => {
         const registerSocket = new WebSocket(`${WS_URL}/register`);
 
         registerSocket.onopen = () => {
-            const registerMessage = { username, password };
+            const registerMessage = { username, password, name, email };
             registerSocket.send(JSON.stringify(registerMessage));
         };
 

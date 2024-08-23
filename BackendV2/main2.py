@@ -108,11 +108,13 @@ async def register_user(websocket: WebSocket):
         message = json.loads(data)
         username = message["username"]
         password = message["password"]
+        name = message["name"]
+        email = message["email"]
 
         account_manager = AccountManager('alumchat.lol', 5222)
 
         # Registro de cuenta
-        account_manager.register_account(username, password)
+        account_manager.register_account(username, password, name, email)
         
         # Cerrar sesión
         account_manager.logout()

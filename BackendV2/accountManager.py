@@ -7,15 +7,27 @@ class AccountManager:
         self.port = port
         self.client = XMPPClient(server, port, '', '', '')
 
-    def register_account(self, username: str, password: str) -> None:
+    def register_account(self, username: str, password: str, name: str = '', email: str = '') -> None:
         self.client.connect_without_auth()
-        self.client.send(f"<iq type='set' id='reg1'><query xmlns='jabber:iq:register'><username>{username}</username><password>{password}</password></query></iq>")
+        # Crea la solicitud de registro con campos adicionales para nombre y email
+        register_request = (
+            f"<iq type='set' id='reg1'>"
+            f"<query xmlns='jabber:iq:register'>"
+            f"<username>{username}</username>"
+            f"<password>{password}</password>"
+            f"<name>{name}</name>"  # Campo adicional para el nombre
+            f"<email>{email}</email>"  # Campo adicional para el email
+            f"</query>"
+            f"</iq>"
+        )
+        self.client.send(register_request)
         response = self.client.receive()
         if 'type="result"' in response:
             log_message("Info", "Account registered successfully.")
         else:
             log_message("Error", "Account registration failed.")
         self.client.disconnect()
+
 
     def login(self, username: str, password: str) -> None:
         self.client.username = username
