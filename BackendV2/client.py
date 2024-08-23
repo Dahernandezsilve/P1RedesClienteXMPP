@@ -32,6 +32,23 @@ class XMPPClient:
         self.send(f"<stream:stream to='{self.server}' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0'>")
         self.receive()
 
+    def reconnect(self) -> None:
+        print("🔄 Intentando reconectar...")
+        self.disconnect()
+        self.connect()
+
+    def is_connected(self) -> bool:
+        if self.sock is None:
+            print("🚨 Socket es None")
+            return False
+        try:
+            self.sock.send(b'\x00')  # Enviar un byte nulo para verificar si el socket sigue activo
+        except (socket.error, ssl.SSLError) as e:
+            print(f"🚨 Error en el socket: {e}")
+            return False
+        print("🟢 Socket está conectado") 
+        return True
+        
     def connect(self) -> None:
         self.connect_without_auth()
         
@@ -54,6 +71,8 @@ class XMPPClient:
         self.receive()
 
     def send(self, data: str) -> None:
+        if not self.is_connected():
+            self.reconnect()
         log_message("Sending", data)
         self.sock.sendall(data.encode('utf-8'))
 
@@ -70,7 +89,7 @@ class XMPPClient:
         data = ""
         buffer_size = 4096  # Tamaño inicial del búfer
         self.sock.settimeout(1)  # Establecer un tiempo de espera de 1 segundo
-
+        print("Socket", self.sock)
         while True:
             try:
                 print("Receiving data...")

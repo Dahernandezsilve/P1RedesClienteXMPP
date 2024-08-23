@@ -29,10 +29,7 @@ class AccountManager:
     def logout(self) -> None:
         self.client.disconnect()
 
-    def delete_account(self, username: str, password: str) -> None:
-        self.client.username = username
-        self.client.password = password
-        self.client.connect()
+    def delete_account(self) -> None:
         self.client.send("<iq type='set' id='delete1'><query xmlns='jabber:iq:register'><remove/></query></iq>")
         self.client.receive()
         self.client.disconnect()

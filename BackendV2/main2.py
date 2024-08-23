@@ -79,6 +79,15 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     error_message = {"status": "error", "message": f"Failed to add contact: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
 
+            elif message["action"] == "delete_account":
+                try:
+                    account_manager.delete_account()
+                    response = {"status": "success", "message": f"Account {account_manager.client.username} deleted successfully"}
+                    await websocket.send_text(json.dumps(response))
+                except Exception as e:
+                    error_message = {"status": "error", "message": f"Failed to delete account: {str(e)}"}
+                    await websocket.send_text(json.dumps(error_message))
+
         except WebSocketDisconnect:
             break
         except Exception as e:
@@ -104,9 +113,6 @@ async def register_user(websocket: WebSocket):
 
         # Registro de cuenta
         account_manager.register_account(username, password)
-        
-        # Iniciar sesión con la nueva cuenta
-        account_manager.login(username, password)
         
         # Cerrar sesión
         account_manager.logout()

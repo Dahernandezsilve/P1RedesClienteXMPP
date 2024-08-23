@@ -42,8 +42,8 @@ const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence })
     setIsLoading(true);
     try {
       await registerUser(username, password);
-      setUser(username);
-      setError('');
+      // Si el registro fue exitoso, realiza el login automáticamente
+      await handleLogin();
     } catch (err) {
       setError('Sign up failed. Please try again.');
     } finally {

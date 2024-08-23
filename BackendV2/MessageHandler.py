@@ -87,9 +87,65 @@ class MessageHandler:
         print(f"Processing IQ message: {message}")
         try:
             root = ET.fromstring(message)
-            # Implementar lógica específica para procesar IQs
+            iq_type = root.attrib.get('type')
+            iq_id = root.attrib.get('id')
+            iq_from = root.attrib.get('from')
+            iq_to = root.attrib.get('to')
+
+            # Espacios de nombres
+            namespace_ping = 'urn:xmpp:ping'
+            namespace_version = 'jabber:iq:version'
+            namespace_bind = 'urn:ietf:params:xml:ns:xmpp-bind'
+            namespace_session = 'urn:ietf:params:xml:ns=xmpp-session'
+
+            if iq_type == 'get':
+                if root.find(f".//{{{namespace_ping}}}ping") is not None:
+                    # Responder al ping
+                    response = (
+                        f'<iq type="result" id="{iq_id}" from="{iq_to}" to="{iq_from}"/>'
+                    )
+                    self.client.send(response)
+                elif root.find(f".//{{{namespace_version}}}query") is not None:
+                    # Responder a la consulta de versión
+                    version_response = (
+                        f'<iq type="result" id="{iq_id}" from="{iq_to}" to="{iq_from}">'
+                        '<query xmlns="jabber:iq:version">'
+                        '<name>DiegosClient</name>'
+                        '<version>1.0</version>'
+                        '<os>Windows 11</os>'
+                        '</query>'
+                        '</iq>'
+                    )
+                    self.client.send(version_response)
+                elif root.find(f".//{{{namespace_bind}}}bind") is not None:
+                    # Responder a la solicitud de enlace
+                    bind_response = (
+                        f'<iq type="result" id="{iq_id}" from="{iq_to}" to="{iq_from}">'
+                        '<bind xmlns="urn:ietf:params:xml:ns:xmpp-bind">'
+                        f'<jid>{iq_to}</jid>'
+                        '</bind>'
+                        '</iq>'
+                    )
+                    self.client.send(bind_response)
+                else:
+                    # Manejar otros tipos de IQ si es necesario
+                    print(f"Unhandled IQ message query: {ET.tostring(root, encoding='unicode')}")
+            elif iq_type == 'result':
+                # Manejar mensajes IQ de tipo result si es necesario
+                print(f"Handled IQ message type result: {ET.tostring(root, encoding='unicode')}")
+            elif iq_type == 'error':
+                # Manejar mensajes IQ de tipo error
+                error_code = root.find('.//error').attrib.get('code', 'unknown')
+                error_text = root.find('.//error').text
+                print(f"Error received: code={error_code}, text={error_text}")
+            else:
+                # Manejar otros tipos de IQ si es necesario
+                print(f"Unhandled IQ message type: {iq_type}")
+
         except ET.ParseError:
             print("Error parsing IQ message")
+        except Exception as e:
+            print(f"Unexpected error processing IQ message: {e}")
 
     async def handle_presence_message(self, message: str):
         print(f"Processing presence message: {message}")

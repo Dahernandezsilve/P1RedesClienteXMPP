@@ -4,6 +4,7 @@ import { sendMessage } from '@services/xmppService';
 import Slidebar from '@components/Slidebar';
 import Modal from '@components/Modal';
 import { showAllUsers } from '../../services/xmppService';
+import { deleteAcount } from '../../services/xmppService';	
 
 const Chat = ({ user, messages, contacts, usersList, presence }) => {
   const [message, setMessage] = useState('');
@@ -11,8 +12,9 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
   const [messageHistories, setMessageHistories] = useState({});
   const [selectedContact, setSelectedContact] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-  const [processedMessageIds, setProcessedMessageIds] = useState(new Set()); // Estado para almacenar los ID de mensajes procesados
+  const [processedMessageIds, setProcessedMessageIds] = useState(new Set()); 
   const [unreadMessages, setUnreadMessages] = useState({});
+  const [hasFetchedUsers, setHasFetchedUsers] = useState(false); // Estado para controlar la ejecución de showAllUsers
 
   const handleSend = () => {
     if (message.trim() && recipient.trim()) {
@@ -42,9 +44,25 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
     }
   };
 
+  const deleteAccount = async () => {
+    try {
+      console.log('Deleting account...');
+      await deleteAcount(); // Llama a la función del servicio para eliminar la cuenta
+      console.log('Account deleted successfully.');
+      window.location.reload(); // Recargar la página después de eliminar la cuenta
+    } catch (error) {
+      console.error('Failed to delete account:', error);
+    }
+  };
+
   const openModal = () => {
     console.log('Opening modal to show all users.');
-    showAllUsers();
+    
+    if (!hasFetchedUsers) {
+      showAllUsers(); // Ejecutar solo una vez
+      setHasFetchedUsers(true);
+    }
+
     setModalOpen(true);
   };
 
@@ -62,7 +80,6 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
     console.log('Contact selected:', contact);
     setSelectedContact(contact);
     setRecipient(contact);
-    // Resetear el contador de mensajes no vistos al seleccionar un contacto
     setUnreadMessages((prevUnreadMessages) => ({
       ...prevUnreadMessages,
       [contact]: 0,
@@ -73,14 +90,10 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
     if (messages.length > 0) {
       console.log('New messages received:', messages);
 
-      // Filtrar los mensajes nuevos y actualizarlos en el estado
       const newMessages = messages.filter((msg) => {
-        // Se asume que el receptor es el usuario autenticado si no se especifica
         const receiver = msg.receiver || user;
         const senderMatches = msg.sender.split('/')[0] === (selectedContact.split('/')[0] || '');
         const receiverMatches = receiver.split('/')[0] === (receiver.split('/')[0] || '');
-
-        // Verificar si el mensaje ya fue procesado
         const isDuplicate = processedMessageIds.has(msg.id_message);
         
         return (senderMatches || receiverMatches) && !isDuplicate;
@@ -90,17 +103,16 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
       if (newMessages.length > 0) {
         console.log('Filtered new messages:', newMessages);
 
-        // Actualizar el historial de mensajes y almacenar los ID procesados
         setMessageHistories((prevHistories) => {
           const updatedHistories = { ...prevHistories };
 
           newMessages.forEach((msg) => {
-            const sender = msg.sender.split('/')[0]; // Obtener el contacto del remitente
+            const sender = msg.sender.split('/')[0];
             updatedHistories[sender] = [
               ...(updatedHistories[sender] || []),
               {
                 ...msg,
-                receivedAt: new Date().toISOString(), // Marca cuando se recibió el mensaje
+                receivedAt: new Date().toISOString(),
               },
             ];
           });
@@ -109,18 +121,16 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
           return updatedHistories;
         });
 
-        // Añadir los nuevos IDs al conjunto de IDs procesados
         setProcessedMessageIds((prevIds) => {
           const updatedIds = new Set(prevIds);
           newMessages.forEach((msg) => updatedIds.add(msg.id_message));
           return updatedIds;
         });
 
-        // Actualizar el contador de mensajes no vistos para todos los contactos
         setUnreadMessages((prevUnreadMessages) => {
           const updatedUnreadMessages = { ...prevUnreadMessages };
           newMessages.forEach((msg) => {
-            const contact = msg.sender.split("/")[0]; // Asumiendo que todos los mensajes son del mismo contacto
+            const contact = msg.sender.split("/")[0];
             console.log('Updating unread messages for:', contact);
             console.log('Selected contact on unread:', selectedContact);
             if (selectedContact !== contact) {
@@ -145,8 +155,9 @@ const Chat = ({ user, messages, contacts, usersList, presence }) => {
       <div className="chat-content">
         <div className="chat-header">
           <h2>{selectedContact ? selectedContact.split('@')[0] : 'Select a Contact'}'s Chat</h2>
-          <button onClick={openModal} className="lego-button2">Show All Users</button>
+          <button onClick={openModal} className="lego-button">Show All Users</button>
           <button onClick={handleLogout} className="lego-button">Logout</button>
+          <button onClick={deleteAccount} className="lego-button">Delete Account</button>
         </div>
         <div className="chat-messages">
           {(selectedContact && messageHistories[selectedContact] || []).map((msg, index) => (

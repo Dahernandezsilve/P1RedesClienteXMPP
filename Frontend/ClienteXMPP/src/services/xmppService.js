@@ -106,6 +106,17 @@ export const addContact = (contact_username, custom_message = "") => {
     }
 };
 
+export const deleteAcount = () => {
+    if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
+        const request = {
+            action: "delete_account",
+        };
+        loginSocket.send(JSON.stringify(request));
+    } else {
+        console.error('WebSocket is not open. Unable to add contact.');
+    }
+};
+
 export const sendMessage = (to, body) => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
         const message = { action: "send_message", to, body };
