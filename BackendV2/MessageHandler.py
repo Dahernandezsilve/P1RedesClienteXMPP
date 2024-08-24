@@ -7,6 +7,7 @@ import json
 import requests
 import base64
 import uuid
+import re
 
 class MessageHandler:
     def __init__(self, client, comm_manager: CommunicationManager) -> None:
@@ -135,26 +136,50 @@ class MessageHandler:
                     print(f"Unhandled IQ message query: {ET.tostring(root, encoding='unicode')}")
             elif iq_type == 'result':
                 print(f"Handled IQ message type result: {ET.tostring(root, encoding='unicode')}")
-                namespace = '{urn:xmpp:http:upload:0}'
+
+                xml_text = ET.tostring(root, encoding='unicode')
+                id_pattern = re.compile(r'id="disco1"')
                 
-                slot = root.find(f'.//{namespace}slot')
-                if slot is not None:
+                if id_pattern.search(xml_text):
+                    rooms = []
+                    try:
+                        root = ET.fromstring(xml_text)
+                        item_count = 0
+                        for item_elem in root.findall(".//{http://jabber.org/protocol/disco#items}item"):
+                            jid = item_elem.get("jid", "N/A")
+                            name = item_elem.get("name", "N/A")
 
-                    put_element = slot.find(f'{namespace}put')
-                    get_element = slot.find(f'{namespace}get')
-                    
-                    put_url = put_element.attrib.get('url') if put_element is not None else None
-                    get_url = get_element.attrib.get('url') if get_element is not None else None
-
-                    if put_url and get_url:
-                        print(f"Received upload URLs:\nPUT: {put_url}\nGET: {get_url}")
-
-                        # Llamar a upload_file con las URLs obtenidas
-                        await self.upload_file(put_url, get_url)
-                    else:
-                        print("Error: Upload URLs not found in the IQ result")
+                            print(f"Item {item_count}: JID={jid}, Name={name}")
+                            
+                            rooms.append({
+                                "jid": jid,
+                                "name": name,
+                            })
+                            item_count += 1
+                        groups_list = {"status": "success", "action": "show_all_groups", "groups": rooms}
+                        await self.websocket.send_text(json.dumps(groups_list))
+                    except ET.ParseError:
+                        print("Error parsing discovery response")
                 else:
-                    print("Error: 'slot' element not found in the IQ result")
+                    namespace = '{urn:xmpp:http:upload:0}'
+                    slot = root.find(f'.//{namespace}slot')
+                    if slot is not None:
+
+                        put_element = slot.find(f'{namespace}put')
+                        get_element = slot.find(f'{namespace}get')
+                        
+                        put_url = put_element.attrib.get('url') if put_element is not None else None
+                        get_url = get_element.attrib.get('url') if get_element is not None else None
+
+                        if put_url and get_url:
+                            print(f"Received upload URLs:\nPUT: {put_url}\nGET: {get_url}")
+
+                            # Llamar a upload_file con las URLs obtenidas
+                            await self.upload_file(put_url, get_url)
+                        else:
+                            print("Error: Upload URLs not found in the IQ result")
+                    else:
+                        print("Error: 'slot' element not found in the IQ result")
 
             elif iq_type == 'error':
                 # Manejar mensajes IQ de tipo error

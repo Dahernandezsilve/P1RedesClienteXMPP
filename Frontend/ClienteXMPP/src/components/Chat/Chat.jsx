@@ -3,17 +3,20 @@ import './Chat.css';
 import { sendMessage, sendFile } from '@services/xmppService'; 
 import Slidebar from '@components/Slidebar';
 import Modal from '@components/Modal';
-import { showAllUsers } from '../../services/xmppService';
+import ModalGroups from '@components/ModalGroups';
+import { showAllUsers, discoverGroups } from '../../services/xmppService';
 import { deleteAcount } from '../../services/xmppService';
 
-const Chat = ({ user, messages, contacts, usersList, presence, messageHistories, setMessageHistories }) => {
+const Chat = ({ user, messages, contacts, usersList, presence, messageHistories, setMessageHistories, groupsList }) => {
   const [message, setMessage] = useState('');
   const [recipient, setRecipient] = useState('');
   const [selectedContact, setSelectedContact] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalGroupsOpen, setModalGroupsOpen] = useState(false);
   const [processedMessageIds, setProcessedMessageIds] = useState(new Set()); 
   const [unreadMessages, setUnreadMessages] = useState({});
   const [hasFetchedUsers, setHasFetchedUsers] = useState(false);
+  const [hasFetchedGroups, setHasFetchedGroups] = useState(false);
   const [file, setFile] = useState(null); // Nuevo estado para manejar el archivo
 
   const formatFileName = (fileName) => {
@@ -81,6 +84,19 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
   const closeModal = () => {
     setModalOpen(false);
   };
+
+  const openModalGroups = () => {
+    if (!hasFetchedGroups) {
+      discoverGroups();
+      setHasFetchedGroups(true);
+    }
+    setModalGroupsOpen(true);
+  };
+
+  const closeModalGroups = () => {
+    setModalGroupsOpen(false);
+  };
+
 
   const handleLogout = () => {
     window.location.reload();
@@ -197,6 +213,7 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
       <div className="chat-content">
         <div className="chat-header">
           <h2>{selectedContact ? selectedContact.split('@')[0] : 'Select a Contact'}'s Chat</h2>
+          <button onClick={openModalGroups} className="lego-button">Show All Groups</button>
           <button onClick={openModal} className="lego-button">Show All Users</button>
           <button onClick={handleLogout} className="lego-button">Logout</button>
           <button onClick={deleteAccount} className="lego-button">Delete Account</button>
@@ -231,6 +248,10 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
         </div>
       </div>
       <Modal isOpen={modalOpen} onClose={closeModal} users={usersList} />
+      {
+        modalGroupsOpen && groupsList.length > 0 && <ModalGroups isOpen={modalGroupsOpen} onClose={closeModalGroups} users={groupsList} />
+
+      }
     </div>
   );
 };

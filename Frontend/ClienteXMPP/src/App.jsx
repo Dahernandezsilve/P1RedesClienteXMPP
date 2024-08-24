@@ -9,12 +9,30 @@ const App = () => {
   const [usersList, setUsersList] = useState([]);
   const [presence, setPresence] = useState({});
   const [messageHistories, setMessageHistories] = useState({});
+  const [groupsList, setGroupsList] = useState([]);
   return (
     <div>
       {user ? (
-        <Chat user={user} messages={messages} contacts={contacts} usersList={usersList} presence={presence} setMessageHistories={setMessageHistories} messageHistories={messageHistories}/>
+        <Chat 
+          user={user}
+          messages={messages}
+          contacts={contacts}
+          usersList={usersList}
+          presence={presence}
+          setMessageHistories={setMessageHistories}
+          messageHistories={messageHistories}
+          groupsList={groupsList}
+        />
       ) : (
-        <Login setUser={setUser} setMessages={setMessages} setContacts={setContacts} setUsersList={setUsersList} setPresence={setPresence} setMessageHistories={setMessageHistories}/>
+        <Login
+          setUser={setUser}
+          setMessages={setMessages}
+          setContacts={setContacts}
+          setUsersList={setUsersList}
+          setPresence={setPresence}
+          setMessageHistories={setMessageHistories}
+          setGroupsList={setGroupsList}
+        />
       )}
     </div>
   );

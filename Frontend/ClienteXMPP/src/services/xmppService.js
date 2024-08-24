@@ -6,7 +6,7 @@ let loginSocket;
 
 const processedMessageIds = new Set();
 
-export const connectXmpp = (username, password, setMessages, setContacts, setUsersList, setPresence, setMessageHistories) => {
+export const connectXmpp = (username, password, setMessages, setContacts, setUsersList, setPresence, setMessageHistories, setGroupsList) => {
     return new Promise((resolve, reject) => {
         loginSocket = new WebSocket(`${WS_URL}/ws/${username}/${password}`);
 
@@ -25,7 +25,12 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
             } else if (message.action === 'show_all_users' && Array.isArray(message.users)) {
                 // Manejar la lista de todos los usuarios
                 console.log('All users list received:', message.users);
-                setUsersList(message.users);
+                setUsersList(message.users);                
+            } else if (message.action === 'show_all_groups' && Array.isArray(message.groups)) {
+                // Manejar la lista de todos los grupos
+                console.log('All groups list received:', message);
+                console.log('All groups list received:', message.groups);
+                setGroupsList(message.groups);
             } else if (message.status === 'success' && message.users && message.action === "contacts") {
                 // Manejar la lista de contactos
                 console.log('Contacts list received:', message.users);
@@ -112,6 +117,15 @@ export const showAllUsers = () => {
         console.error('WebSocket is not open. Unable to request user list.');
     }
 };
+
+export const discoverGroups = () => {
+    if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
+        const request = { action: "show_all_groups" };
+        loginSocket.send(JSON.stringify(request));
+    } else {
+        console.error('WebSocket is not open. Unable to discover groups.');
+    }
+}
 
 export const addContact = (contact_username, custom_message = "") => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {

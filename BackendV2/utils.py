@@ -27,7 +27,13 @@ def xml_to_json(xml_string: str) -> str:
         print(f"Error converting XML to JSON: {e}")
         return {}
 
-
+def clean_xml(xml_str):
+    # Elimina etiquetas incompletas o mal formadas
+    xml_str = re.sub(r'<item[^>]*<item[^>]*>', '<item', xml_str)  # Corrige etiquetas <item> mal cerradas
+    xml_str = re.sub(r'<item\s+[^>]+?[^>]*<item[^>]*>', '<item', xml_str)  # Corrige etiquetas <item> mal anidadas
+    xml_str = re.sub(r'(<item[^>]+?)(?!jid=|name=).*?>', r'\1>', xml_str)  # Elimina atributos innecesarios
+    xml_str = re.sub(r'<item\s+[^>]+?/>', '<item/>', xml_str)  # Corrige etiquetas <item> auto-cerradas
+    return xml_str
 
 def encode_base64(data: str) -> str:
     """Encode a string to base64."""

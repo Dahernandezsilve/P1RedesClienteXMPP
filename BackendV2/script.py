@@ -22,17 +22,18 @@ async def main():
         # Crear instancia de MessageHandler
         message_handler = MessageHandler(account_manager.client, comm_manager)
     
-        
+    
         # Enviar un mensaje (descomentado si se necesita)
         # comm_manager.send_message('jim21169-test@alumchat.lol', 'Hola, ¿cómo estás?')
-        comm_manager.show_users()
+        comm_manager.discover_group_chats()
         
+
         # Iniciar la recepción de mensajes
-        asyncio.create_task(message_handler.receive_messages())
+        #asyncio.create_task(message_handler.receive_messages())
         
         # Simulación de espera para recepción de mensajes
-        await asyncio.sleep(10)  # Ajusta el tiempo según sea necesario
         
+        account_manager.logout()
     except Exception as e:
         print(f"Error: {e}")
     finally:

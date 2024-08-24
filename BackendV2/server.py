@@ -61,6 +61,14 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     error_message = {"status": "error", "message": f"Failed to retrieve user list: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
             
+            elif message["action"] == "show_all_groups":
+                try:
+                    comm_manager.discover_group_chats()
+                except Exception as e:
+                    error_message = {"status": "error", "message": f"Failed to discovery groups: {str(e)}"}
+                    await websocket.send_text(json.dumps(error_message))
+
+
             elif message["action"] == "send_message":
                 to = message["to"]
                 body = message["body"]

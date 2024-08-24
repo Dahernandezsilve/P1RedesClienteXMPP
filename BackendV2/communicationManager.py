@@ -1,9 +1,11 @@
 from client import XMPPClient
+from utils import clean_xml
 import xml.etree.ElementTree as ET
 import re
 import json
 import asyncio
 import requests
+
 
 class CommunicationManager:
     def __init__(self, client: XMPPClient, websocket = None) -> None:
@@ -107,6 +109,18 @@ class CommunicationManager:
     def join_group_chat(self, group_name: str) -> None:
         # Lógica para unirse a un grupo
         pass
+
+    def discover_group_chats(self) -> list:
+        muc_service_jid = f"conference.{self.client.server}"
+        
+        discover_query = f"""
+        <iq type='get' to='{muc_service_jid}' id='disco1'>
+            <query xmlns='http://jabber.org/protocol/disco#items'/>
+        </iq>
+        """
+        
+        self.client.send(discover_query)
+       
 
     def set_presence(self, presence: str, status: str = 'unknown') -> None:
         valid_presence_types = ['available', 'away', 'dnd', 'xa', 'unknown', 'chat']
