@@ -94,16 +94,19 @@ const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
                 className="profile-image" 
               />
               <div className="contact-info">
-                <span className="contact-name">{contact.jid}</span>
-                <div className="presence-container">
-                  <span className={`presence-indicator ${presenceDisplay}`}>
-                    {contactPresence.show === 'dnd' ? 'busy' : contactPresence.show === 'xa' ? 'Not Available' : contactPresence.show !== 'unknown' ? contactPresence.show : contactPresence.type}
-                  </span>
-                  <span className="presence-status">
-                   Status: {contactPresence.status}
-                  </span>
-                </div>
+                {contact.isGroup ? <span className="contact-name">{contact.name}</span> : <span className="contact-name">{contact.jid}</span>}
+                {contact.isGroup ? null:
+                  (<div className="presence-container">
+                    <span className={`presence-indicator ${presenceDisplay}`}>
+                      {contactPresence.show === 'dnd' ? 'busy' : contactPresence.show === 'xa' ? 'Not Available' : contactPresence.show !== 'unknown' ? contactPresence.show : contactPresence.type}
+                    </span>
+                    <span className="presence-status">
+                    Status: {contactPresence.status}
+                    </span>
+                    </div>)
+                }
               </div>
+
               <div className={`notification-badge ${unreadCount > 0 ? 'has-notifications count' : ''}`} >
                 {unreadCount >= 0 ? unreadCount : ''}
               </div>

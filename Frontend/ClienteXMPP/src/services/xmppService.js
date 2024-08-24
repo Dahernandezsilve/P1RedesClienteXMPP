@@ -33,6 +33,7 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                 setGroupsList(message.groups);
             } else if (message.status === 'success' && message.users && message.action === "contacts") {
                 // Manejar la lista de contactos
+                console.log('Contacts list received:', message);
                 console.log('Contacts list received:', message.users);
                 setContacts(message.users);
             } else if (message.action === "add_contact") {
@@ -83,12 +84,36 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                     }
                 });
             } else if (message.message && message.from) {
+                const isGroup = message.from.includes('@conference');
+
+                const [groupFullName, senderName] = message.from.split('/');
+                const groupName = isGroup ? groupFullName.split('@')[0] : null;
                 const newMessage = {
-                    sender: message.from,
+                    sender: isGroup ? `${senderName}` : message.from,
                     text: message.message,
-                    id_message: message.id_message
+                    id_message: message.id_message,
+                    isGroup: isGroup,
+                    groupName: groupName,
+                    senderName: senderName,
+                    groupFullName: groupFullName,
                 };
                 console.log('Message received:', message);
+
+                console.log('New group:', groupName);
+                setContacts((prevContacts) => {
+                    const newContacts = [...prevContacts];
+                    const groupExists = newContacts.some(contact => contact.jid === groupFullName);
+        
+                        if (!groupExists) {
+                            newContacts.push({
+                                isGroup: isGroup,
+                                name: groupName,
+                                jid: groupFullName,
+                            });
+                        }
+        
+                    return newContacts;
+                });
                 setMessages((messages) => [...messages, newMessage]);
             } else {
                 console.log('Message received:', message);
@@ -126,6 +151,16 @@ export const discoverGroups = () => {
         console.error('WebSocket is not open. Unable to discover groups.');
     }
 }
+
+export const joinGroup = (group_jid) => {
+    if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
+        console.log('Joining group:', group_jid);
+        const request = { action: "join_group", group_jid };
+        loginSocket.send(JSON.stringify(request));
+    } else {
+        console.error('WebSocket is not open. Unable to join group.');
+    }
+};
 
 export const addContact = (contact_username, custom_message = "") => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {

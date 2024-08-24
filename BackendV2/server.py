@@ -97,6 +97,14 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     error_message = {"status": "error", "message": f"Failed to delete account: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
 
+            elif message["action"] == "join_group":
+                try:
+                    group_name = message["group_jid"]
+                    await comm_manager.join_group_chat(group_name)
+                except Exception as e:
+                    error_message = {"status": "error", "message": f"Failed to join group chat: {str(e)}"}
+                    await websocket.send_text(json.dumps(error_message))
+
             elif message["action"] == "send_file":
                 try:
                     to = message["to"]

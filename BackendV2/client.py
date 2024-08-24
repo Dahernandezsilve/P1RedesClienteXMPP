@@ -127,7 +127,13 @@ class XMPPClient:
             return response
     
     def send_message(self, to: str, body: str) -> None:
-        self.send(f"<message to='{to}' type='chat'><body>{body}</body></message>")
+        if 'conference' in to:
+            message_xml = f"<message to='{to}' type='groupchat'><body>{body}</body></message>"
+        else:
+            message_xml = f"<message to='{to}' type='chat'><body>{body}</body></message>"
+
+        self.send(message_xml)
+        # Enviar el mensaje
         time.sleep(1)
         infor = self.receive()
         print('testeando', infor)

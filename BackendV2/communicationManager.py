@@ -106,9 +106,23 @@ class CommunicationManager:
     def send_message(self, to: str, body: str) -> None:
         self.client.send_message(to, body)
 
-    def join_group_chat(self, group_name: str) -> None:
-        # Lógica para unirse a un grupo
-        pass
+    async def join_group_chat(self, jid: str) -> None:
+        group_jid = f"{jid}/{self.client.username}"
+        
+        join_query = f"""
+        <presence to='{group_jid}'>
+            <x xmlns='http://jabber.org/protocol/muc'/>
+        </presence>
+        """
+        
+        try:
+            self.client.send(join_query)
+            response = {"status": "success", "message": f"Group {group_jid} joined successfully"}
+            await self.websocket.send_text(json.dumps(response))
+        except Exception as e:
+            error_message = {"status": "error", "message": f"Error joining group chat: {e}"}
+            await self.websocket.send_text(json.dumps(error_message))                   
+
 
     def discover_group_chats(self) -> list:
         muc_service_jid = f"conference.{self.client.server}"

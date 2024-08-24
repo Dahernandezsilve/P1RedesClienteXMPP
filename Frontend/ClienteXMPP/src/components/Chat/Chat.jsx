@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Chat.css';
-import { sendMessage, sendFile } from '@services/xmppService'; 
+import { sendMessage, sendFile, joinGroup } from '@services/xmppService'; 
 import Slidebar from '@components/Slidebar';
 import Modal from '@components/Modal';
 import ModalGroups from '@components/ModalGroups';
@@ -41,7 +41,8 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
         };
         return updatedHistories;
       });
-
+      console.log('Sending message 🚨:', message);
+      console.log('recipient:', recipient);
       sendMessage(recipient, message);
       setMessage('');
     }
@@ -97,6 +98,11 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
     setModalGroupsOpen(false);
   };
 
+  const handleJoinGroup = (group) => {
+    joinGroup(group);
+    setModalGroupsOpen(false);
+  };
+
 
   const handleLogout = () => {
     window.location.reload();
@@ -126,17 +132,27 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
         setMessageHistories((prevHistories) => {
           const updatedHistories = { ...prevHistories };
           newMessages.forEach((msg) => {
-            const sender = msg.sender.split('/')[0];
-            updatedHistories[sender] = [
-              ...(updatedHistories[sender] || []),
-              {
-                ...msg,
-                receivedAt: new Date().toISOString(),
-              },
-            ];
-          });
-          return updatedHistories;
+            if (msg.isGroup) {
+              updatedHistories[msg.groupFullName] = [
+                ...(updatedHistories[msg.groupFullName] || []),
+                {
+                  ...msg,
+                  receivedAt: new Date().toISOString(),
+                },
+              ];
+            } else {
+              const sender = msg.sender.split('/')[0];
+              updatedHistories[sender] = [
+                ...(updatedHistories[sender] || []),
+                {
+                  ...msg,
+                  receivedAt: new Date().toISOString(),
+                },
+              ];
+          }
         });
+        return updatedHistories;
+      });
 
         setProcessedMessageIds((prevIds) => {
           const updatedIds = new Set(prevIds);
@@ -219,13 +235,28 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
           <button onClick={deleteAccount} className="lego-button">Delete Account</button>
         </div>
         <div className="chat-messages">
+          {console.log('Selected contact 👁️:', selectedContact)}
+          {console.log('Message histories 👁️:', messageHistories)}
           {(selectedContact && messageHistories[selectedContact] || []).map((msg, index) => (
-            <div key={index} className={`chat-message ${msg.sender === user ? 'sent' : 'received'}`}>
-              <span className="chat-sender">{msg.sender ? msg.sender.split('@')[0] : 'Unknown'}</span>: 
-              <span className="chat-text">
-                {renderMessageContent(msg.text)}
-              </span>
-            </div>
+            <>
+            { msg.isGroup ? (
+              <div key={index} className={`chat-message ${msg.groupName === user ? 'sent' : 'received'}`}>
+                <span className="chat-sender">{msg.sender ? msg.sender.split('@')[0] : 'Unknown'}</span>: 
+                <span className="chat-text">
+                  {renderMessageContent(msg.text)}
+                </span>
+              </div>
+            ) : 
+            (
+              <div key={index} className={`chat-message ${msg.sender === user ? 'sent' : 'received'}`}>
+                <span className="chat-sender">{msg.sender ? msg.sender.split('@')[0] : 'Unknown'}</span>: 
+                <span className="chat-text">
+                  {renderMessageContent(msg.text)}
+                </span>
+              </div>
+            ) }
+
+            </>
           ))}
         </div>
         <div className="chat-inputs">
@@ -249,7 +280,7 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
       </div>
       <Modal isOpen={modalOpen} onClose={closeModal} users={usersList} />
       {
-        modalGroupsOpen && groupsList.length > 0 && <ModalGroups isOpen={modalGroupsOpen} onClose={closeModalGroups} users={groupsList} />
+        modalGroupsOpen && groupsList.length > 0 && <ModalGroups isOpen={modalGroupsOpen} onClose={closeModalGroups} users={groupsList} handleJoinGroup={handleJoinGroup} />
 
       }
     </div>

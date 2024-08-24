@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './ModalGroups.css'; // Asegúrate de tener este archivo para el estilo
 
-const ModalGroups = ({ isOpen, onClose, users }) => {
+const ModalGroups = ({ isOpen, onClose, users, handleJoinGroup }) => {
   if (!isOpen) return null;
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -84,7 +84,7 @@ const ModalGroups = ({ isOpen, onClose, users }) => {
           </thead>
           <tbody>
             {currentUsers.map((user, index) => (
-              <tr key={index} onClick={() => handleRowClick(user)} style={{ cursor: 'pointer' }}>
+              <tr key={index} onClick={() => handleJoinGroup(user.jid)} style={{ cursor: 'pointer' }}>
                 <td>{user.jid}</td>
                 <td>{user.name}</td>
               </tr>

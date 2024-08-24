@@ -25,7 +25,7 @@ async def main():
     
         # Enviar un mensaje (descomentado si se necesita)
         # comm_manager.send_message('jim21169-test@alumchat.lol', 'Hola, ¿cómo estás?')
-        comm_manager.discover_group_chats()
+        await comm_manager.join_group_chat('val21240')
         
 
         # Iniciar la recepción de mensajes
