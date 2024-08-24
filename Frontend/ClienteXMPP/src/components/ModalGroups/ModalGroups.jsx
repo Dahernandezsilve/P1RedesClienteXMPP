@@ -51,6 +51,13 @@ const ModalGroups = ({ isOpen, onClose, users }) => {
     return Array.from(new Set(pages)); // Eliminar duplicados de las elipsis
   };
 
+  // Función para manejar el clic en una fila
+  const handleRowClick = (user) => {
+    // Aquí puedes definir la lógica que deseas ejecutar cuando una fila sea clickeada
+    console.log('Clicked user:', user);
+    // Por ejemplo, podrías abrir un modal con detalles del usuario o navegar a una página diferente
+  };
+
   return (
     <div className="modal-overlay">
       <div className="modal-content">
@@ -77,7 +84,7 @@ const ModalGroups = ({ isOpen, onClose, users }) => {
           </thead>
           <tbody>
             {currentUsers.map((user, index) => (
-              <tr key={index}>
+              <tr key={index} onClick={() => handleRowClick(user)} style={{ cursor: 'pointer' }}>
                 <td>{user.jid}</td>
                 <td>{user.name}</td>
               </tr>

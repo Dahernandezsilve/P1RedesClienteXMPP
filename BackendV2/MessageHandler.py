@@ -157,7 +157,7 @@ class MessageHandler:
                             })
                             item_count += 1
                         groups_list = {"status": "success", "action": "show_all_groups", "groups": rooms}
-                        await self.websocket.send_text(json.dumps(groups_list))
+                        await self.comm_manager.websocket.send_text(json.dumps(groups_list))
                     except ET.ParseError:
                         print("Error parsing discovery response")
                 else:

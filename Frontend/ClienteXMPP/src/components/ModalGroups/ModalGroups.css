@@ -49,6 +49,17 @@
   padding: 8px;
 }
 
+.user-table tr {
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+
+.user-table tr:hover {
+  background-color: #ff0000; 
+}
+
+
 .pagination {
   margin-top: 20px;
   text-align: center;

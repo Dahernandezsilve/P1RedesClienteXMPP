@@ -27,6 +27,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
         account_manager.login(username, password)
     except Exception as e:
         error_message = {"status": "error", "message": "Login failed. Please check your credentials"}
+        print(f"Error: {e}")
         await websocket.send_text(json.dumps(error_message))
         await websocket.close()
         return
