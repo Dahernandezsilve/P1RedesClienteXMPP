@@ -70,8 +70,13 @@ class XMPPClient:
         # Proceder a la siguiente parte del proceso de conexión
         self.send(f"<iq type='set' id='bind_1'><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'><resource>{self.resource}</resource></bind></iq>")
         self.receive()
-        self.send("<iq type='set' id='sess_1'><session xmlns='urn:ietf:params:xml:ns=xmpp-session'/></iq>")
-        self.receive()
+
+        asyncio.create_task(self.send_ping())
+
+    async def send_ping(self):
+        while self.is_connected():
+            self.send("<iq type='get' id='ping1'><ping xmlns='urn:xmpp:ping'/></iq>")
+            await asyncio.sleep(60)  # Esperar 60 segundos entre pings
 
     def send(self, data: str) -> None:
         if not self.is_connected():
