@@ -148,6 +148,15 @@ export const showAllUsers = () => {
     }
 };
 
+export const createGroup = (groupName, groupDescription) => {
+    if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
+        const request = { action: "create_group", groupName, groupDescription };
+        loginSocket.send(JSON.stringify(request));
+    } else {
+        console.error('WebSocket is not open. Unable to create group.');
+    }
+};
+
 export const discoverGroups = () => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
         const request = { action: "show_all_groups" };

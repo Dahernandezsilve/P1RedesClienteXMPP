@@ -2,7 +2,7 @@ import asyncio
 import xml.etree.ElementTree as ET
 from typing import Optional
 from communicationManager import CommunicationManager
-from utils import split_xml_messages, split_presence_messages, split_all_messages, parse_bookmarks_response
+from utils import split_xml_messages, split_presence_messages, split_all_messages, parse_bookmarks_response, split_iq_messages
 import json
 import requests
 import base64
@@ -46,7 +46,9 @@ class MessageHandler:
         if "<message" in message:
             await self.handle_chat_message(message)
         elif "<iq" in message:
-            await self.handle_iq_message(message)
+            iq_messages = split_iq_messages(message)
+            for message in iq_messages:
+                await self.handle_iq_message(message)
         elif "<presence" in message:
             await self.handle_presence_message(message)
         else:

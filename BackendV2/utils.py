@@ -120,3 +120,15 @@ def parse_bookmarks_response(xml_string):
         })
     
     return bookmarks
+
+def split_iq_messages(xml_data: str) -> list:
+    # Parsear el XML
+    root = ET.fromstring(f"<root>{xml_data}</root>")
+    
+    # Encontrar todos los elementos <iq>
+    iq_messages = []
+    for iq in root.findall('.//iq'):
+        # Convertir el elemento <iq> en texto
+        iq_messages.append(ET.tostring(iq, encoding='unicode'))
+    
+    return iq_messages

@@ -4,7 +4,8 @@ import { sendMessage, sendFile, joinGroup } from '@services/xmppService';
 import Slidebar from '@components/Slidebar';
 import Modal from '@components/Modal';
 import ModalGroups from '@components/ModalGroups';
-import { showAllUsers, discoverGroups } from '../../services/xmppService';
+import ModalCreateGroups from '@components/ModalCreateGroups';
+import { showAllUsers, discoverGroups, createGroup } from '../../services/xmppService';
 import { deleteAcount } from '../../services/xmppService';
 
 const Chat = ({ user, messages, contacts, usersList, presence, messageHistories, setMessageHistories, groupsList }) => {
@@ -17,8 +18,32 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
   const [unreadMessages, setUnreadMessages] = useState({});
   const [hasFetchedUsers, setHasFetchedUsers] = useState(false);
   const [hasFetchedGroups, setHasFetchedGroups] = useState(false);
-  const [file, setFile] = useState(null); // Nuevo estado para manejar el archivo
+  const [file, setFile] = useState(null); 
+  const [modalCreateGroupOpen, setModalCreateGroupOpen] = useState(false);
 
+  const openModalCreateGroup = () => {
+    setModalCreateGroupOpen(true);
+  };
+  
+  const closeModalCreateGroup = () => {
+    setModalCreateGroupOpen(false);
+  };
+
+  const handleCreateGroup = (groupName, groupDescription) => {
+    // Aquí llamas a la función que creará el grupo en tu servicio XMPP.
+    // Puedes crear una función `createGroup` en tu `xmppService`.
+    createGroup(groupName, groupDescription)
+      .then(() => {
+        // Actualizar la lista de grupos o realizar otras acciones necesarias
+        discoverGroups(); // para actualizar la lista de grupos después de crear uno nuevo
+      })
+      .catch((error) => {
+        console.error('Failed to create group:', error);
+      });
+  };
+  
+
+  
   const formatFileName = (fileName) => {
     if (fileName.length > 19) {
       return `${fileName.slice(0, 16)}...`;
@@ -87,10 +112,7 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
   };
 
   const openModalGroups = () => {
-    if (!hasFetchedGroups) {
-      discoverGroups();
-      setHasFetchedGroups(true);
-    }
+    discoverGroups();
     setModalGroupsOpen(true);
   };
 
@@ -250,6 +272,7 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
           <h2>{selectedContact ? selectedContact.split('@')[0] : 'Select a Contact'}'s Chat</h2>
           <button onClick={openModalGroups} className="lego-button">Show All Groups</button>
           <button onClick={openModal} className="lego-button">Show All Users</button>
+          <button onClick={openModalCreateGroup} className="lego-button">Create Group</button>
           <button onClick={handleLogout} className="lego-button">Logout</button>
           <button onClick={deleteAccount} className="lego-button">Delete Account</button>
         </div>
@@ -303,6 +326,11 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
         modalGroupsOpen && groupsList.length > 0 && <ModalGroups isOpen={modalGroupsOpen} onClose={closeModalGroups} users={groupsList} handleJoinGroup={handleJoinGroup} />
 
       }
+      <ModalCreateGroups 
+        isOpen={modalCreateGroupOpen} 
+        onClose={closeModalCreateGroup} 
+        onCreateGroup={handleCreateGroup} 
+      />
     </div>
   );
 };

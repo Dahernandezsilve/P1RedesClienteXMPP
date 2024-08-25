@@ -173,6 +173,35 @@ class CommunicationManager:
         self.client.send(discover_query)
        
 
+    async def create_group(self, group_name: str, group_description: str) -> None:
+        group_jid = f"{group_name}@conference.{self.client.server}"
+        
+        create_group_query = f"""
+        <iq type='set' to='{group_jid}' id='create_group_1'>
+            <query xmlns='http://jabber.org/protocol/muc#owner'>
+                <x xmlns='jabber:x:data' type='submit'>
+                    <field var='FORM_TYPE' type='hidden'>
+                        <value>http://jabber.org/protocol/muc#roomconfig</value>
+                    </field>
+                    <field var='muc#roomconfig_roomname'>
+                        <value>{group_name}</value>
+                    </field>
+                    <field var='muc#roomconfig_roomdesc'>
+                        <value>{group_description}</value>
+                    </field>
+                    <field var='muc#roomconfig_persistentroom'>
+                        <value>1</value>
+                    </field>
+                    <field var='muc#roomconfig_publicroom'>
+                        <value>1</value>
+                    </field>
+                </x>
+            </query>
+        </iq>
+        """
+
+        await asyncio.to_thread(self.client.send, create_group_query)
+
     async def load_and_join_bookmarked_groups(self):
         bookmark_query = """
         <iq type='get'>

@@ -93,6 +93,17 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                 response = {"status": "success", "message": f"Message sent to {to}"}
                 await websocket.send_text(json.dumps(response))
 
+            elif message["action"] == "create_group":
+                try:
+                    group_name = message["groupName"]
+                    group_description = message["groupDescription"]
+                    await comm_manager.join_group_chat(f"{group_name}@conference.{account_manager.client.server}")
+                    await comm_manager.create_group(group_name, group_description)
+                    await comm_manager.add_group_to_bookmarks(group_name+"@conference."+account_manager.client.server, group_name+"@conference."+account_manager.client.server+"/"+account_manager.client.username)
+                except Exception as e:
+                    error_message = {"status": "error", "message": f"Failed to create group chat: {str(e)}"}
+                    await websocket.send_text(json.dumps(error_message))
+
             elif message["action"] == "add_contact":
                 try:
                     contact_username = message["contact_username"]
