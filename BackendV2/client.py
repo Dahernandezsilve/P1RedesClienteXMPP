@@ -100,8 +100,7 @@ class XMPPClient:
                 if not chunk:
                     break  # Salir si no hay más datos
                 data += chunk  # Acumular datos
-
-                # Aumentar el tamaño del búfer si es necesario
+                                # Aumentar el tamaño del búfer si es necesario
                 if len(chunk) == buffer_size:
                     buffer_size *= 2  # Duplicar el tamaño del búfer
                     print(f"Increasing buffer size to: {buffer_size}")

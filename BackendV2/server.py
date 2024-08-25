@@ -44,6 +44,14 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
         error_message = {"status": "error", "message": f"Failed to retrieve user list: {str(e)}"}
         await websocket.send_text(json.dumps(error_message))
 
+    try:
+        await comm_manager.load_and_join_bookmarked_groups()
+        user_list = {"status": "success", "message": "Groups loaded succesfully"}
+        await websocket.send_text(json.dumps(user_list))
+    except Exception as e:
+        error_message = {"status": "error", "message": f"Failed to retrieve bookmarks list: {str(e)}"}
+        await websocket.send_text(json.dumps(error_message))
+
     # Inicia la recepción de mensajes
     asyncio.create_task(message_handler.receive_messages())
 
@@ -101,6 +109,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                 try:
                     group_name = message["group_jid"]
                     await comm_manager.join_group_chat(group_name)
+                    await comm_manager.add_group_to_bookmarks(group_name, group_name+"/"+account_manager.client.username)
                 except Exception as e:
                     error_message = {"status": "error", "message": f"Failed to join group chat: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))

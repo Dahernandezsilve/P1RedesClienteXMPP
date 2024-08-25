@@ -98,3 +98,25 @@ def split_all_messages(xml_data: str) -> list:
     # Encuentra todos los mensajes usando la expresión regular combinada
     all_messages = re.findall(combined_pattern, xml_data, re.DOTALL)
     return all_messages
+
+
+def parse_bookmarks_response(xml_string):
+    root = ET.fromstring(xml_string)
+    bookmarks = []
+    
+    for conference in root.findall(".//storage:conference", namespaces={"storage": "storage:bookmarks"}):
+        group_jid = conference.attrib.get('jid')
+        autojoin = conference.attrib.get('autojoin', 'false') == 'true'
+        name = conference.attrib.get('name')
+        
+        nick_element = conference.find("storage:nick", namespaces={"storage": "storage:bookmarks"})
+        nick = nick_element.text if nick_element is not None else None
+        
+        bookmarks.append({
+            "name": name,
+            "jid": group_jid,
+            "autojoin": autojoin,
+            "nick": nick
+        })
+    
+    return bookmarks

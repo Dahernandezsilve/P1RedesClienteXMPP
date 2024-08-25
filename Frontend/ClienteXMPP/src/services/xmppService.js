@@ -69,7 +69,6 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                     [message.presence.from.split('/')[0]]: message.presence
                 }));
             } else if (Array.isArray(message.root) && message.root.length > 0) {
-                // Manejar mensajes entrantes
                 message.root.forEach((rootItem) => {
                     if (Array.isArray(rootItem.message)) {
                         rootItem.message.forEach((msg) => {
@@ -83,6 +82,26 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                         });
                     }
                 });
+            } else if (message.action === "bookmarks") {
+                console.log('Bookmarks received:', message.message);
+                message.message.map(bookmark => {
+                    setContacts((prevContacts) => {
+                        const newContacts = [...prevContacts];
+                        const groupExists = newContacts.some(contact => contact.jid === bookmark.jid);
+                        const groupName = bookmark.jid.split('@')[0];
+                        const isGroup = bookmark.jid.includes('@conference');
+                        if (!groupExists) {
+                            newContacts.push({
+                                isGroup: isGroup,
+                                name: groupName,
+                                jid: bookmark.jid,
+                            });
+                        }
+        
+                        return newContacts;
+                    });
+                });
+
             } else if (message.message && message.from) {
                 const isGroup = message.from.includes('@conference');
 
@@ -100,20 +119,6 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                 console.log('Message received:', message);
 
                 console.log('New group:', groupName);
-                setContacts((prevContacts) => {
-                    const newContacts = [...prevContacts];
-                    const groupExists = newContacts.some(contact => contact.jid === groupFullName);
-        
-                        if (!groupExists) {
-                            newContacts.push({
-                                isGroup: isGroup,
-                                name: groupName,
-                                jid: groupFullName,
-                            });
-                        }
-        
-                    return newContacts;
-                });
                 setMessages((messages) => [...messages, newMessage]);
             } else {
                 console.log('Message received:', message);

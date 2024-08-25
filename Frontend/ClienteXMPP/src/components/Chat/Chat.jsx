@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Chat.css';
 import { sendMessage, sendFile, joinGroup } from '@services/xmppService'; 
 import Slidebar from '@components/Slidebar';
@@ -163,11 +163,17 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
         setUnreadMessages((prevUnreadMessages) => {
           const updatedUnreadMessages = { ...prevUnreadMessages };
           newMessages.forEach((msg) => {
-            const contact = msg.sender.split("/")[0];
-            if (selectedContact !== contact) {
-              updatedUnreadMessages[contact] = (updatedUnreadMessages[contact] || 0) + 1;
-            }
-          });
+            if (msg.isGroup) {
+              const contact = msg.groupFullName
+              if (selectedContact !== contact) {
+                updatedUnreadMessages[contact] = (updatedUnreadMessages[contact] || 0) + 1;
+              }
+            } else {
+              const contact = msg.sender.split("/")[0];
+              if (selectedContact !== contact) {
+                updatedUnreadMessages[contact] = (updatedUnreadMessages[contact] || 0) + 1;
+              }
+          }});
           return updatedUnreadMessages;
         });
       }
@@ -223,6 +229,19 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
     return text;
   };
 
+    const messagesEndRef = useRef(null);
+
+    const scrollToBottom = () => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+  
+    useEffect(() => {
+      scrollToBottom();
+    }, [selectedContact, messageHistories]);
+  
+
   return (
     <div className="chat-container">
       <Slidebar contacts={contacts} onSelectContact={handleSelectContact} presence={presence} unreadMessages={unreadMessages}/>
@@ -240,7 +259,7 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
           {(selectedContact && messageHistories[selectedContact] || []).map((msg, index) => (
             <>
             { msg.isGroup ? (
-              <div key={index} className={`chat-message ${msg.groupName === user ? 'sent' : 'received'}`}>
+              <div key={index} className={`chat-message ${msg.sender === user ? 'sent' : 'received'}`}>
                 <span className="chat-sender">{msg.sender ? msg.sender.split('@')[0] : 'Unknown'}</span>: 
                 <span className="chat-text">
                   {renderMessageContent(msg.text)}
@@ -258,6 +277,7 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
 
             </>
           ))}
+          <div ref={messagesEndRef} />
         </div>
         <div className="chat-inputs">
           <input

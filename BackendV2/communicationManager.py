@@ -11,6 +11,7 @@ class CommunicationManager:
     def __init__(self, client: XMPPClient, websocket = None) -> None:
         self.client = client
         self.websocket = websocket
+        self.bookmarksCM = {}
 
     def show_users(self) -> list:
         roster_response = self.client.get_roster()
@@ -117,12 +118,43 @@ class CommunicationManager:
         
         try:
             self.client.send(join_query)
-            response = {"status": "success", "message": f"Group {group_jid} joined successfully"}
-            await self.websocket.send_text(json.dumps(response))
+            self.bookmarksCM[jid] = group_jid
+            #await self.add_group_to_bookmarks(jid, group_jid)
+            #response = {"status": "success", "message": f"Group {group_jid} joined successfully"}
+            #await self.websocket.send_text(json.dumps(response))
         except Exception as e:
             error_message = {"status": "error", "message": f"Error joining group chat: {e}"}
             await self.websocket.send_text(json.dumps(error_message))                   
 
+    async def add_group_to_bookmarks(self, jid: str, group_jid: str):
+        self.bookmarksCM[jid] = group_jid
+
+        # Crear el XML de actualización
+        bookmark_query = "<iq type='set'><query xmlns='jabber:iq:private'><storage xmlns='storage:bookmarks'>"
+        
+        for jid, group_jid in self.bookmarksCM.items():
+            
+            bookmark_query += f"""
+            <conference name='{group_jid}' jid='{jid}'>
+                <nick>{self.client.username}</nick>
+            </conference>
+            """
+        
+        bookmark_query += "</storage></query></iq>"
+
+        try:
+            # Enviar solicitud para actualizar bookmarks
+            await asyncio.to_thread(self.client.send, bookmark_query)
+            bookmarks = [{"group_jid": group_jid, "jid": jid}]
+            response = {
+                "status": "success",
+                "action": "bookmarks",
+                "message": bookmarks,
+            }
+            await self.websocket.send_text(json.dumps(response))
+        except Exception as e:
+            error_message = {"status": "error", "message": f"Error adding group to bookmarks: {e}"}
+            await self.websocket.send_text(json.dumps(error_message))
 
     def discover_group_chats(self) -> list:
         muc_service_jid = f"conference.{self.client.server}"
@@ -135,6 +167,23 @@ class CommunicationManager:
         
         self.client.send(discover_query)
        
+
+    async def load_and_join_bookmarked_groups(self):
+        bookmark_query = """
+        <iq type='get'>
+            <query xmlns='jabber:iq:private'>
+                <storage xmlns='storage:bookmarks'/>
+            </query>
+        </iq>
+        """
+        
+        try:
+            # Envía la solicitud para recuperar los bookmarks
+            self.client.send(bookmark_query)            
+            
+        except Exception as e:
+            error_message = {"status": "error", "message": f"Error loading bookmarks: {e}"}
+            await self.websocket.send_text(json.dumps(error_message))
 
     def set_presence(self, presence: str, status: str = 'unknown') -> None:
         valid_presence_types = ['available', 'away', 'dnd', 'xa', 'unknown', 'chat']

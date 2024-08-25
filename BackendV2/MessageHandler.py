@@ -2,7 +2,7 @@ import asyncio
 import xml.etree.ElementTree as ET
 from typing import Optional
 from communicationManager import CommunicationManager
-from utils import split_xml_messages, split_presence_messages, split_all_messages
+from utils import split_xml_messages, split_presence_messages, split_all_messages, parse_bookmarks_response
 import json
 import requests
 import base64
@@ -62,9 +62,10 @@ class MessageHandler:
                 # Buscar el atributo `id` del mensaje
                 message_id = root.attrib.get('id')
                 if not message_id:
-                    print("No message ID found, skipping message.")
-                    continue
-                
+                    stanza_id_elem = root.find(".//{urn:xmpp:sid:0}stanza-id")
+                    if stanza_id_elem is not None:
+                        message_id = stanza_id_elem.attrib.get('id')
+
                 # Verificar si el mensaje ya ha sido procesado
                 if message_id in self.processed_message_ids:
                     print(f"Message with ID {message_id} has already been processed, skipping.")
@@ -139,6 +140,7 @@ class MessageHandler:
 
                 xml_text = ET.tostring(root, encoding='unicode')
                 id_pattern = re.compile(r'id="disco1"')
+                bookmark_pattern = re.compile(r'<storage xmlns="storage:bookmarks">')
                 
                 if id_pattern.search(xml_text):
                     rooms = []
@@ -160,6 +162,17 @@ class MessageHandler:
                         await self.comm_manager.websocket.send_text(json.dumps(groups_list))
                     except ET.ParseError:
                         print("Error parsing discovery response")
+                elif root.find(".//{storage:bookmarks}storage") is not None:
+                    bookmarks = parse_bookmarks_response(xml_text)
+                    if len(bookmarks)>0:
+                        for book in bookmarks:
+                            await self.comm_manager.join_group_chat(book['jid'])
+                        response = {
+                            "status": "success",
+                            "action": "bookmarks",
+                            "message": bookmarks,
+                         }
+                        await self.websocket.send_text(json.dumps(response))
                 else:
                     namespace = '{urn:xmpp:http:upload:0}'
                     slot = root.find(f'.//{namespace}slot')

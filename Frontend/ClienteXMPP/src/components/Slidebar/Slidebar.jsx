@@ -106,7 +106,6 @@ const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
                     </div>)
                 }
               </div>
-
               <div className={`notification-badge ${unreadCount > 0 ? 'has-notifications count' : ''}`} >
                 {unreadCount >= 0 ? unreadCount : ''}
               </div>
