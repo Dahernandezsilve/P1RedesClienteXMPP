@@ -118,12 +118,18 @@ class XMPPClient:
         return data
 
     def get_roster(self) -> str:
-            """
-            Envía una solicitud para obtener el roster (lista de contactos) del usuario.
-            """
-            self.send("<iq type='get' id='roster_1'><query xmlns='jabber:iq:roster'/></iq>")
-            response = self.receive()
-            return response
+        """
+        Envía una solicitud para obtener el roster (lista de contactos) del usuario.
+        """
+        self.send("<iq type='get' id='roster_1'><query xmlns='jabber:iq:roster'/></iq>")
+        response = self.receive()
+        return response
+    
+    def get_rosterWithoutResponse(self) -> None:
+        """
+        Envía una solicitud para obtener el roster (lista de contactos) del usuario.
+        """
+        self.send("<iq type='get' id='roster_1'><query xmlns='jabber:iq:roster'/></iq>")
     
     def send_message(self, to: str, body: str) -> None:
         if 'conference' in to:

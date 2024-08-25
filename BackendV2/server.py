@@ -77,6 +77,14 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     error_message = {"status": "error", "message": f"Failed to discovery groups: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
 
+            elif message["action"] == "accept_subscription":
+                try:
+                    print(f"Accepting subscription from {message}")
+                    comm_manager.accept_subscription(message["from"])
+                    account_manager.client.get_rosterWithoutResponse()
+                except Exception as e:
+                    error_message = {"status": "error", "message": f"Failed to accept subscription: {str(e)}"}
+                    await websocket.send_text(json.dumps(error_message))
 
             elif message["action"] == "send_message":
                 to = message["to"]

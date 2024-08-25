@@ -1,23 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import './Slidebar.css';
 import Header from '@components/Header';
-import { addContact, updatePresence } from '@services/xmppService'; // Asegúrate de importar la función para actualizar presencia
+import { addContact, updatePresence, acceptSubscription } from '@services/xmppService';
 
 const defaultProfileImage = './usuario.png';
-const notificationSound = new Audio('./popSound.mp3'); // Ruta al archivo de sonido
+const notificationSound = new Audio('./popSound.mp3');
 
 const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
-  const [newContact, setNewContact] = useState(''); // Estado para el nuevo contacto
-  const [customMessage, setCustomMessage] = useState(''); // Estado para el mensaje personalizado
-  const [isPresenceMenuOpen, setIsPresenceMenuOpen] = useState(false); // Estado para mostrar/ocultar menú de presencia
-  const [presenceMessage, setPresenceMessage] = useState('unknown'); // Estado para el mensaje de presencia
-  const [status, setStatus] = useState(''); // Estado para el estado de presencia
+  const [newContact, setNewContact] = useState(''); 
+  const [customMessage, setCustomMessage] = useState(''); 
+  const [isPresenceMenuOpen, setIsPresenceMenuOpen] = useState(false);
+  const [presenceMessage, setPresenceMessage] = useState('unknown'); 
+  const [status, setStatus] = useState(''); 
+  const [requests, setSubscriptionRequests] = useState([]);
+  const [addedJIDs, setAddedJIDs] = useState(new Set());
 
   const handleAddContact = () => {
     if (newContact.trim()) {
-      addContact(newContact, customMessage); // Llama a la función para añadir contacto
-      setNewContact(''); // Limpia el input de nuevo contacto
-      setCustomMessage(''); // Limpia el input de mensaje personalizado
+      addContact(newContact, customMessage); 
+      setNewContact('');
+      setCustomMessage(''); 
     } else {
       console.error('Please enter a valid contact username');
     }
@@ -29,8 +31,8 @@ const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
 
   const handlePresenceChange = (message) => {
     setPresenceMessage(message);
-    updatePresence(message, status); // Llama a la función para actualizar el mensaje de presencia en el servidor
-    setIsPresenceMenuOpen(false); // Cierra el menú después de seleccionar un mensaje
+    updatePresence(message, status);
+    setIsPresenceMenuOpen(false); 
   };
 
   // Efecto para reproducir el sonido cuando llegan nuevos mensajes
@@ -41,6 +43,25 @@ const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
       notificationSound.play().catch(error => console.error('Error playing sound:', error));
     }
   }, [unreadMessages]);
+
+  useEffect(() => {
+    Object.values(presence).forEach((pres) => {
+      if (pres.type === 'subscribe' && !addedJIDs.has(pres.from)) {
+        setAddedJIDs((prevJIDs) => new Set(prevJIDs).add(pres.from));
+        setSubscriptionRequests((prevRequests) => [
+          ...prevRequests,
+          { from: pres.from }
+        ]);
+      }
+    });
+  }, [presence]);
+
+  const handleAcceptRequest = (request) => {
+    acceptSubscription(request.from); // Esta función debe implementar la lógica para aceptar
+    setSubscriptionRequests((prevRequests) =>
+      prevRequests.filter((req) => req.from !== request.from)
+    );
+  };
 
   return (
     <div className="slidebar">
@@ -114,6 +135,19 @@ const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
         })}
       </ul>
       <div className="add-contact-section">
+        <div className="subscription-requests">
+          <h3>Subscription Requests</h3>
+            {requests.length === 0 ? (
+              <p>No new requests</p>
+            ) : (
+              requests.map((request, index) => (
+                <div key={index} className="subscription-request">
+                  <span>{request.from}</span>
+                  <button onClick={() => handleAcceptRequest(request)}>Accept</button>
+                </div>
+              ))
+            )}
+        </div>
         <input
           type="text"
           placeholder="New Contact"

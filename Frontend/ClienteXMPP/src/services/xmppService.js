@@ -226,6 +226,15 @@ export const sendFile = async (to, file) => {
     }
 };
 
+export const acceptSubscription = (from) => {
+    if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
+        const message = { action: "accept_subscription", from };
+        loginSocket.send(JSON.stringify(message));
+    } else {
+        console.error('WebSocket is not open. Unable to accept subscription.');
+    }
+}
+
 
 export const updatePresence = (presence, status) => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {

@@ -173,6 +173,24 @@ class MessageHandler:
                             "message": bookmarks,
                          }
                         await self.websocket.send_text(json.dumps(response))
+                elif root.find(".//{jabber:iq:roster}query") is not None:
+                    users = []
+                    try:
+                        # Extraer información de los elementos <item>
+                        for item in root.findall(".//{jabber:iq:roster}item"):
+                            jid = item.get("jid")
+                            name = item.get("name", "")
+                            subscription = item.get("subscription", "")
+                            
+                            if subscription != "none":
+                                users.append({"jid": jid, "name": name})
+                        
+                        # Preparar la lista de usuarios para enviar por WebSocket
+                        user_list = {"status": "success", "action": "contacts", "users": users}
+                        await self.comm_manager.websocket.send_text(json.dumps(user_list))
+                    
+                    except ET.ParseError:
+                        print("Error parsing XML element")
                 else:
                     namespace = '{urn:xmpp:http:upload:0}'
                     slot = root.find(f'.//{namespace}slot')
@@ -311,7 +329,6 @@ class MessageHandler:
                     if presence_type == 'unavailable':
                         # El usuario ha cerrado sesión o está desconectado
                         print(f"User {from_jid} is now unavailable.")
-                        # Aquí puedes actualizar tu lista de usuarios, interfaz, etc.
 
                     elif presence_type == 'subscribed':
                         # El otro usuario aceptó tu solicitud de amistad
