@@ -28,7 +28,7 @@ The XMPP client supports the following functionalities:
 - Send/receive files.
 
 **XEPs**
-Here there are some XEPs that are implemented directly or indirectly in the client:
+Here are some XEPs that are implemented either directly or indirectly in the client
 - XEP-0199: XMPP Ping
 - XEP-0045: Multi-User Chat
 - XEP-0077: In-Band Registration
