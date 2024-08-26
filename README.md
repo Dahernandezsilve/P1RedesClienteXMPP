@@ -69,7 +69,7 @@ pip install -r requirements.txt
 Navigate to the frontend directory and install npm dependencies:
 
 ```bash
-cd frontend
+cd Frontend/ClienteXMPP
 yarn install
 ```
 
