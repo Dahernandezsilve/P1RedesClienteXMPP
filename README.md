@@ -42,11 +42,10 @@ Here are some XEPs that are implemented either directly or indirectly in the cli
 
 Before you begin, ensure you have the following installed:
 
-- ![Node.js](https://img.shields.io/badge/Node.js-16.0.0%2B-green?logo=nodedotjs&logoColor=white) Node.js (v16 or higher)
+- ![Node.js](https://img.shields.io/badge/Node.js-20.12.1%2B-green?logo=nodedotjs&logoColor=white) Node.js (v20.12.1)
 - ![npm](https://img.shields.io/badge/npm-8.0.0%2B-red?logo=npm&logoColor=white) npm (Node Package Manager)
-- ![Yarn](https://img.shields.io/badge/yarn-1.22.0%2B-blue?logo=yarn&logoColor=white) Yarn
+- ![Yarn](https://img.shields.io/badge/yarn-1.22.19%2B-blue?logo=yarn&logoColor=white) Yarn (v1.22.19)
 - ![Python](https://img.shields.io/badge/Python-3.11.8-blue?logo=python&logoColor=white) Python 3.11.8
-
 
 ## ⚙️ Installation
 Clone the repository to your local machine:
