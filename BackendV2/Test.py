@@ -3,6 +3,7 @@ import ssl
 import base64
 from typing import Optional
 
+# Clase para gestionar la conexión y comunicación con un servidor XMPP (Solo son pruebas experimentales)
 class XMPPClient:
     def __init__(self, server: str, port: int, username: str, password: str, resource: str) -> None:
         self.server = server

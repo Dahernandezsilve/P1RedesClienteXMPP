@@ -3,6 +3,7 @@ from communicationManager import CommunicationManager
 from MessageHandler import MessageHandler
 import asyncio
 
+# Script de prueba para el manejo de grupos de chat en un servidor XMPP
 async def main():
     server = 'alumchat.lol'
     port = 5222

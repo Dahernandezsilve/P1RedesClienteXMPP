@@ -7,17 +7,20 @@ from utils import xml_to_json
 import json
 import asyncio
 
+# Inicializar la aplicación FastAPI
 app = FastAPI()
 
+# Diccionario para almacenar los clientes conectados
 clients = {}
 
+# Clase para manejar los mensajes recibidos en el WebSocket
 class WebSocketMessageHandler(MessageHandler):
     def __init__(self, client, comm_manager: CommunicationManager, websocket: WebSocket) -> None:
         super().__init__(client, comm_manager)
         self.websocket = websocket
 
 
-
+# Ruta para la conexión WebSocket
 @app.websocket("/ws/{username}/{password}")
 async def websocket_endpoint(websocket: WebSocket, username: str, password: str):
     await websocket.accept()
@@ -60,8 +63,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
             data = await websocket.receive_text()
             message = json.loads(data)
 
-            if message["action"] == "show_all_users":
-                # Manejar la solicitud de mostrar todos los usuarios
+            if message["action"] == "show_all_users": # Mostrar todos los usuarios
                 try:
                     users = comm_manager.search_all_users()
                     user_list = {"status": "success", "action": "show_all_users", "users": users}
@@ -70,14 +72,14 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     error_message = {"status": "error", "message": f"Failed to retrieve user list: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
             
-            elif message["action"] == "show_all_groups":
+            elif message["action"] == "show_all_groups": # Mostrar todos los grupos
                 try:
                     comm_manager.discover_group_chats()
                 except Exception as e:
                     error_message = {"status": "error", "message": f"Failed to discovery groups: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
 
-            elif message["action"] == "accept_subscription":
+            elif message["action"] == "accept_subscription": # Aceptar solicitud de suscripción
                 try:
                     print(f"Accepting subscription from {message}")
                     comm_manager.accept_subscription(message["from"])
@@ -86,14 +88,14 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     error_message = {"status": "error", "message": f"Failed to accept subscription: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
 
-            elif message["action"] == "send_message":
+            elif message["action"] == "send_message": # Enviar mensaje
                 to = message["to"]
                 body = message["body"]
                 comm_manager.send_message(to, body)
                 response = {"status": "success", "message": f"Message sent to {to}"}
                 await websocket.send_text(json.dumps(response))
 
-            elif message["action"] == "create_group":
+            elif message["action"] == "create_group": # Crear grupo
                 try:
                     group_name = message["groupName"]
                     group_description = message["groupDescription"]
@@ -104,7 +106,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     error_message = {"status": "error", "message": f"Failed to create group chat: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
 
-            elif message["action"] == "add_contact":
+            elif message["action"] == "add_contact": # Agregar contacto
                 try:
                     contact_username = message["contact_username"]
                     custom_message = message.get("custom_message", "")
@@ -115,7 +117,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     error_message = {"status": "error", "message": f"Failed to add contact: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
 
-            elif message["action"] == "delete_account":
+            elif message["action"] == "delete_account": # Eliminar cuenta
                 try:
                     account_manager.delete_account()
                     response = {"status": "success", "message": f"Account {account_manager.client.username} deleted successfully"}
@@ -124,7 +126,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     error_message = {"status": "error", "message": f"Failed to delete account: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
 
-            elif message["action"] == "join_group":
+            elif message["action"] == "join_group": # Unirse a grupo
                 try:
                     group_name = message["group_jid"]
                     await comm_manager.join_group_chat(group_name)
@@ -133,7 +135,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     error_message = {"status": "error", "message": f"Failed to join group chat: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
 
-            elif message["action"] == "send_file":
+            elif message["action"] == "send_file": # Enviar archivo
                 try:
                     to = message["to"]
                     fileName = message["fileName"]
@@ -148,7 +150,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     error_message = {"status": "error", "message": f"Failed to send file: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
 
-            elif message["action"] == "set_presence":
+            elif message["action"] == "set_presence": # Cambiar presencia
                 try:
                     presence = message["presence"]
                     status = message["status"]
@@ -161,7 +163,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
 
         except WebSocketDisconnect:
             break
-        except Exception as e:
+        except Exception as e: # Manejar errores
             print(f"Error in websocket communication: {e}")
             response = {"status": "error", "message": "Failed to send message"}
             await websocket.send_text(json.dumps(response))
@@ -171,6 +173,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
     del clients[username]
 
 
+# Ruta para el registro de usuarios
 @app.websocket("/register")
 async def register_user(websocket: WebSocket):
     await websocket.accept()

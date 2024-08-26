@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import './ModalCreateGroups.css';
 
+// Componente para el modal de creación de grupos
 const ModalCreateGroup = ({ isOpen, onClose, onCreateGroup }) => {
-  const [groupName, setGroupName] = useState('');
-  const [groupDescription, setGroupDescription] = useState('');
+  const [groupName, setGroupName] = useState(''); // Estado para el nombre del grupo
+  const [groupDescription, setGroupDescription] = useState(''); // Estado para la descripción del grupo
 
+  // Función para manejar la creación de un grupo
   const handleCreateGroup = () => {
     onCreateGroup(groupName, groupDescription);
     setGroupName('');
@@ -12,8 +14,8 @@ const ModalCreateGroup = ({ isOpen, onClose, onCreateGroup }) => {
     onClose();
   };
 
+  // Renderizar el modal si está abierto
   if (!isOpen) return null;
-
   return (
     <div className="create-group-modal-overlay">
       <div className="create-group-modal-content">

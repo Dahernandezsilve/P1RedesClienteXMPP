@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import './Modal.css'; // Asegúrate de tener este archivo para el estilo
+import './Modal.css'; 
 
+// Componente para mostrar un modal con la lista de usuarios
 const Modal = ({ isOpen, onClose, users }) => {
   if (!isOpen) return null;
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1); // Estado para la página actual
   const [searchQuery, setSearchQuery] = useState(''); // Estado para la barra de búsqueda
   const usersPerPage = 10; // Número de usuarios por página
 
@@ -66,7 +67,7 @@ const Modal = ({ isOpen, onClose, users }) => {
           value={searchQuery}
           onChange={(e) => {
             setSearchQuery(e.target.value);
-            setCurrentPage(1); // Resetear a la primera página al buscar
+            setCurrentPage(1); 
           }}
         />
 

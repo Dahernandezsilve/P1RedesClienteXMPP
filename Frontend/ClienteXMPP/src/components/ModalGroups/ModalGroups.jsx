@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import './ModalGroups.css'; // Asegúrate de tener este archivo para el estilo
+import './ModalGroups.css';
 
+// Componente para el modal de grupos
 const ModalGroups = ({ isOpen, onClose, users, handleJoinGroup }) => {
   if (!isOpen) return null;
 

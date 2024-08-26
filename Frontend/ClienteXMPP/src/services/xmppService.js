@@ -1,11 +1,9 @@
 // src/services/xmppService.js
+const WS_URL = 'ws://localhost:8000'; // URL del servidor WebSocket
+let loginSocket; // Variable para almacenar la conexión WebSocket
+const processedMessageIds = new Set(); // Conjunto para almacenar los ID de mensajes procesados
 
-const WS_URL = 'ws://localhost:8000'; // URL de tu servidor FastAPI WebSocket
-
-let loginSocket;
-
-const processedMessageIds = new Set();
-
+// Función para conectar al servidor XMPP
 export const connectXmpp = (username, password, setMessages, setContacts, setUsersList, setPresence, setMessageHistories, setGroupsList) => {
     return new Promise((resolve, reject) => {
         loginSocket = new WebSocket(`${WS_URL}/ws/${username}/${password}`);
@@ -14,38 +12,32 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
             console.log('WebSocket login connection opened');
         };
 
-        loginSocket.onmessage = (event) => {
+        loginSocket.onmessage = (event) => { // Manejar los mensajes recibidos
             const message = JSON.parse(event.data);
             console.log('WebSocket message received:', message);
         
-            if (message.status === 'error') {
+            if (message.status === 'error') { // Manejar errores
                 console.error('Login failed:', message.message);
-                loginSocket.close(); // Cierra la conexión si el login falla
+                loginSocket.close(); 
                 resolve({ success: false, error: message.message });
-            } else if (message.action === 'show_all_users' && Array.isArray(message.users)) {
-                // Manejar la lista de todos los usuarios
+            } else if (message.action === 'show_all_users' && Array.isArray(message.users)) { // Manejar la lista de todos los usuarios
                 console.log('All users list received:', message.users);
                 setUsersList(message.users);                
-            } else if (message.action === 'show_all_groups' && Array.isArray(message.groups)) {
-                // Manejar la lista de todos los grupos
+            } else if (message.action === 'show_all_groups' && Array.isArray(message.groups)) { // Manejar la lista de todos los grupos
                 console.log('All groups list received:', message);
                 console.log('All groups list received:', message.groups);
                 setGroupsList(message.groups);
-            } else if (message.status === 'success' && message.users && message.action === "contacts") {
-                // Manejar la lista de contactos
+            } else if (message.status === 'success' && message.users && message.action === "contacts") { // Manejar la lista de contactos
                 console.log('Contacts list received:', message);
                 console.log('Contacts list received:', message.users);
                 setContacts(message.users);
-            } else if (message.action === "add_contact") {
-                // Manejar la respuesta de agregar contacto
+            } else if (message.action === "add_contact") { // Manejar la adición de un contacto
                 if (message.status === 'success') {
-                    console.log(`Contact ${message.message} added successfully.`);
-                    // Aquí podrías actualizar la lista de contactos o notificar al usuario
+                    console.log(`Contact ${message.message} added successfully.`); // Mensaje de éxito
                 } else {
                     console.error('Failed to add contact:', message.message);
                 }
-            }
-            else if (message.action === "fileUrl") {
+            } else if (message.action === "fileUrl") { // Manejar la URL del archivo recibido
                 console.log('File URL received:', message.url);
                 if (!processedMessageIds.has(message.id_message)) {
                     setMessageHistories((prevHistories) => {
@@ -62,7 +54,7 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                 } else {
                     console.log(`Message with ID ${message.id_message} already processed.`);
                 }
-            } else if (message.action === "presence_update") {
+            } else if (message.action === "presence_update") { // Manejar la actualización de presencia
                 console.log('Presence update received:', message.presence);
                 setPresence(prevPresence => ({
                     ...prevPresence,
@@ -82,7 +74,7 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                         });
                     }
                 });
-            } else if (message.action === "bookmarks") {
+            } else if (message.action === "bookmarks") { // Manejar los marcadores recibidos
                 console.log('Bookmarks received:', message.message);
                 message.message.map(bookmark => {
                     setContacts((prevContacts) => {
@@ -102,7 +94,7 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                     });
                 });
 
-            } else if (message.message && message.from) {
+            } else if (message.message && message.from) { // Manejar los mensajes de chat
                 const isGroup = message.from.includes('@conference');
 
                 const [groupFullName, senderName] = message.from.split('/');
@@ -128,11 +120,11 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
         };
         
 
-        loginSocket.onclose = () => {
+        loginSocket.onclose = () => { // Manejar el cierre de la conexión
             console.log('WebSocket login connection closed');
         };
 
-        loginSocket.onerror = (error) => {
+        loginSocket.onerror = (error) => { // Manejar errores de WebSocket
             reject('WebSocket error: ' + error.message);
         };
     });
@@ -148,6 +140,7 @@ export const showAllUsers = () => {
     }
 };
 
+// Función para solicitar la lista de todos los grupos
 export const createGroup = (groupName, groupDescription) => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
         const request = { action: "create_group", groupName, groupDescription };
@@ -157,6 +150,7 @@ export const createGroup = (groupName, groupDescription) => {
     }
 };
 
+// Función para solicitar la lista de todos los grupos
 export const discoverGroups = () => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
         const request = { action: "show_all_groups" };
@@ -166,6 +160,7 @@ export const discoverGroups = () => {
     }
 }
 
+// Función para unirse a un grupo
 export const joinGroup = (group_jid) => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
         console.log('Joining group:', group_jid);
@@ -176,6 +171,7 @@ export const joinGroup = (group_jid) => {
     }
 };
 
+// Función para enviar un mensaje
 export const addContact = (contact_username, custom_message = "") => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
         const request = {
@@ -189,6 +185,7 @@ export const addContact = (contact_username, custom_message = "") => {
     }
 };
 
+// Funcion para eliminar una cuenta
 export const deleteAcount = () => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
         const request = {
@@ -200,6 +197,7 @@ export const deleteAcount = () => {
     }
 };
 
+// Función para enviar un mensaje
 export const sendMessage = (to, body) => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
         const message = { action: "send_message", to, body };
@@ -209,13 +207,15 @@ export const sendMessage = (to, body) => {
     }
 };
 
+
+// Función para enviar un archivo
 export const sendFile = async (to, file) => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
         try {
             // Convertir el archivo a Base64
             const fileReader = new FileReader();
             fileReader.onloadend = () => {
-                const base64Data = fileReader.result.split(',')[1]; // Extraer solo los datos Base64
+                const base64Data = fileReader.result.split(',')[1]; 
                 const message = {
                     action: "send_file",
                     to,
@@ -235,6 +235,7 @@ export const sendFile = async (to, file) => {
     }
 };
 
+// Función para aceptar una solicitud de suscripción
 export const acceptSubscription = (from) => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
         const message = { action: "accept_subscription", from };
@@ -245,6 +246,7 @@ export const acceptSubscription = (from) => {
 }
 
 
+// Función para actualizar la presencia
 export const updatePresence = (presence, status) => {
     if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
         const message = { action: "set_presence", presence, status };
@@ -254,6 +256,7 @@ export const updatePresence = (presence, status) => {
     }
 };
 
+// Función para registrar un usuario
 export const registerUser = (username, password, name, email ) => {
     return new Promise((resolve, reject) => {
         const registerSocket = new WebSocket(`${WS_URL}/register`);
@@ -268,7 +271,7 @@ export const registerUser = (username, password, name, email ) => {
             if (message.status === 'error') {
                 reject(message.message);
             } else {
-                resolve(message.message); // Resolviendo con el mensaje de éxito
+                resolve(message.message); 
                 console.log('WebSocket registration connection opened');
             }
         };

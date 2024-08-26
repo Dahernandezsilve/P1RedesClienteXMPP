@@ -1,5 +1,6 @@
 from accountManager import AccountManager
 
+# Script de prueba para la creación y gestión de cuentas de usuario en un servidor XMPP
 if __name__ == "__main__":
     server = 'alumchat.lol'
     port = 5222

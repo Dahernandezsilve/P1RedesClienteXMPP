@@ -9,13 +9,18 @@ import base64
 import uuid
 import re
 
+
+# Clase para manejar mensajes XMPP
 class MessageHandler:
+    # Inicializar la clase con el cliente XMPP y el gestor de comunicación
     def __init__(self, client, comm_manager: CommunicationManager) -> None:
         self.client = client
         self.comm_manager = comm_manager
         self.message_queue = asyncio.Queue()
-        self.processed_message_ids = set()
+        self.processed_message_ids = set() # Conjunto para almacenar los IDs de los mensajes procesados
 
+
+    # Método para recibir mensajes del servidor XMPP
     async def receive_messages(self):
         while True:
             try:
@@ -34,6 +39,8 @@ class MessageHandler:
                 print(f"Error receiving messages: {e}")
                 break
 
+
+    # Método para procesar mensajes en la cola
     async def process_messages(self):
         while not self.message_queue.empty():
             message = await self.message_queue.get()
@@ -41,6 +48,8 @@ class MessageHandler:
             for msg in messages:
                 await self.handle_message(msg)
 
+
+    # Método para manejar responses XMPP
     async def handle_message(self, message: str):
         
         if "<message" in message:
@@ -54,6 +63,8 @@ class MessageHandler:
         else:
             print(f"Unknown message type: {message}")
 
+
+    # Método para manejar mensajes de chat
     async def handle_chat_message(self, message: str):
         print(f"Processing chat message: {message}")
         try:
@@ -61,7 +72,6 @@ class MessageHandler:
             for messag in messages:
                 root = ET.fromstring(messag)
                 
-                # Buscar el atributo `id` del mensaje
                 message_id = root.attrib.get('id')
                 if not message_id:
                     stanza_id_elem = root.find(".//{urn:xmpp:sid:0}stanza-id")
@@ -90,6 +100,7 @@ class MessageHandler:
             print("Error parsing chat message")
 
 
+    # Método para manejar mensajes IQ
     async def handle_iq_message(self, message: str):
         print(f"Processing IQ message: {message}")
         try:
@@ -105,6 +116,7 @@ class MessageHandler:
             namespace_bind = 'urn:ietf:params:xml:ns:xmpp-bind'
             namespace_session = 'urn:ietf:params:xml:ns=xmpp-session'
 
+            # Manejar diferentes tipos de IQ
             if iq_type == 'get':
                 if root.find(f".//{{{namespace_ping}}}ping") is not None:
                     # Responder al ping
@@ -228,9 +240,13 @@ class MessageHandler:
         except Exception as e:
             print(f"Unexpected error processing IQ message: {e}")
 
+
+    # Método para configurar la función de devolución de llamada de carga
     async def set_upload_callback(self, callback) -> None:
         self.client.uploadCallback = callback
 
+
+    # Método para subir un archivo al servidor
     async def upload_file(self, put_url: str, get_url: str) -> None:
         if self.client.file_data is not None:
             try:
@@ -252,16 +268,25 @@ class MessageHandler:
         else:
             print("Error: No file data available for upload.")
 
+
+    # Método para enviar un mensaje de chat con la URL del archivo
     async def send_file_message(self, get_url: str, to: str) -> None:
         # Generar un identificador único para el mensaje
         id_message = str(uuid.uuid4())
         
         # Construir el mensaje de chat con la URL del archivo y el id_message
-        message = f"""
-        <message type='chat' to='{to}' from='{self.client.username}' id='{id_message}'>
-            <body>{get_url}</body>
-        </message>
-        """
+        if 'conference' in to:
+            message = f"""
+            <message type='groupchat' to='{to}' from='{self.client.username}' id='{id_message}'>
+                <body>{get_url}</body>
+            </message>
+            """
+        else:
+            message = f"""
+            <message type='chat' to='{to}' from='{self.client.username}' id='{id_message}'>
+                <body>{get_url}</body>
+            </message>
+            """
         try:
             # Enviar el mensaje al destinatario
             self.client.send(message)
@@ -292,6 +317,7 @@ class MessageHandler:
         await self.websocket.send_text(json.dumps(response))
 
 
+    # Método para manejar mensajes de presencia
     async def handle_presence_message(self, message: str):
         print(f"Processing presence message: {message}")
         try:

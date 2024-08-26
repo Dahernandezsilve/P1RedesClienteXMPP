@@ -7,12 +7,16 @@ import asyncio
 import requests
 
 
+# Clase para gestionar la comunicación con otros usuarios
 class CommunicationManager:
+    # Inicializar la clase con el cliente XMPP y el WebSocket
     def __init__(self, client: XMPPClient, websocket = None) -> None:
         self.client = client
         self.websocket = websocket
         self.bookmarksCM = {}
 
+
+    # Método para mostrar la lista de usuarios
     def show_users(self) -> list:
         roster_response = self.client.get_roster()
         xml_elements = re.findall(r'(<iq.*?</iq>)', roster_response, re.DOTALL)
@@ -32,6 +36,8 @@ class CommunicationManager:
                 continue
         return users
 
+
+    # Método para buscar todos los usuarios
     def search_all_users(self, filter: str = '*') -> list:
         search_query = f"""<iq type='set' from='{self.client.username}@{self.client.server}/testWeb' to='search.alumchat.lol' id='search1' xml:lang='en'>
             <query xmlns='jabber:iq:search'>
@@ -72,9 +78,10 @@ class CommunicationManager:
                 'email': email,
             })
             
-        
         return users
         
+
+    # Método para agregar un contacto
     def add_contact(self, username: str, custom_message: str = "") -> None:
         user_jid = f"{username}@{self.client.server}"
 
@@ -100,18 +107,18 @@ class CommunicationManager:
         print(f"Contact {user_jid} added successfully with message: {custom_message}")
 
 
-    def show_contact_details(self, username: str) -> None:
-        # Lógica para mostrar detalles de contacto
-        pass
-
+    # Método para enviar un mensaje
     def send_message(self, to: str, body: str) -> None:
         self.client.send_message(to, body)
 
+
+    # Método para aceptar una solicitud de suscripción
     def accept_subscription(self, from_jid: str) -> None:
         accept_subscription_query = f"<presence to='{from_jid}' type='subscribed'/>"
         self.client.send(accept_subscription_query)
         
 
+    # Método para unirse a un chat grupal
     async def join_group_chat(self, jid: str) -> None:
         group_jid = f"{jid}/{self.client.username}"
         
@@ -131,6 +138,8 @@ class CommunicationManager:
             error_message = {"status": "error", "message": f"Error joining group chat: {e}"}
             await self.websocket.send_text(json.dumps(error_message))                   
 
+
+    # Método para agregar un grupo a los bookmarks
     async def add_group_to_bookmarks(self, jid: str, group_jid: str):
         self.bookmarksCM[jid] = group_jid
 
@@ -161,6 +170,8 @@ class CommunicationManager:
             error_message = {"status": "error", "message": f"Error adding group to bookmarks: {e}"}
             await self.websocket.send_text(json.dumps(error_message))
 
+
+    # Método para descubrir chats grupales
     def discover_group_chats(self) -> list:
         muc_service_jid = f"conference.{self.client.server}"
         
@@ -173,6 +184,7 @@ class CommunicationManager:
         self.client.send(discover_query)
        
 
+    # Método para crear un grupo
     async def create_group(self, group_name: str, group_description: str) -> None:
         group_jid = f"{group_name}@conference.{self.client.server}"
         
@@ -202,6 +214,8 @@ class CommunicationManager:
 
         await asyncio.to_thread(self.client.send, create_group_query)
 
+
+    # Método para cargar y unirse a grupos marcados
     async def load_and_join_bookmarked_groups(self):
         bookmark_query = """
         <iq type='get'>
@@ -212,13 +226,14 @@ class CommunicationManager:
         """
         
         try:
-            # Envía la solicitud para recuperar los bookmarks
             self.client.send(bookmark_query)            
             
         except Exception as e:
             error_message = {"status": "error", "message": f"Error loading bookmarks: {e}"}
             await self.websocket.send_text(json.dumps(error_message))
 
+
+    # Método para enviar la presencia
     def set_presence(self, presence: str, status: str = 'unknown') -> None:
         valid_presence_types = ['available', 'away', 'dnd', 'xa', 'unknown', 'chat']
         
@@ -233,12 +248,9 @@ class CommunicationManager:
         )
 
         self.client.send(xmlPresence)
-        
 
-    def send_notification(self, to: str, message: str) -> None:
-        # Lógica para enviar notificaciones
-        pass
 
+    # Método para enviar un archivo
     async def send_file(self, to: str, file_name: str, file_size: int, file_type: str, file_data: bytes) -> None:
         request_slot = f"""
         <iq type='get' to='httpfileupload.alumchat.lol' id='upload-request'>
@@ -260,6 +272,7 @@ class CommunicationManager:
             print(f"Error sending file: {e}")
 
 
+    # Método para manejar mensajes recibidos
     async def handle_received_message(self, message: str, from_attr: str, id_message: str) -> str:
         print(f"Handling received message: {message}")
         json_message = {

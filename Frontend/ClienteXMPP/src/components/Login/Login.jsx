@@ -3,16 +3,18 @@ import { connectXmpp, registerUser } from '@services/xmppService';
 import Loader from '@components/Loader';
 import './Login.css';
 
+// Componente para el inicio de sesión y registro de usuarios
 const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence, setMessageHistories, setGroupsList }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [username, setUsername] = useState(''); // Estado para el nombre de usuario
+  const [password, setPassword] = useState(''); // Estado para la contraseña
+  const [confirmPassword, setConfirmPassword] = useState(''); // Estado para confirmar la contraseña
+  const [name, setName] = useState(''); // Estado para el nombre del usuario
+  const [email, setEmail] = useState(''); // Estado para el correo electrónico
+  const [error, setError] = useState(''); // Estado para mostrar mensajes de error
+  const [isSignUp, setIsSignUp] = useState(false); // Estado para alternar entre inicio de sesión y registro
+  const [isLoading, setIsLoading] = useState(false); // Estado para mostrar el indicador de carga
 
+  // Función para manejar el inicio de sesión
   const handleLogin = async () => {
     if (!username || !password) {
       setError('Username and password are required.');
@@ -36,6 +38,7 @@ const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence, s
     }
   };
 
+  // Función para manejar el registro de usuarios
   const handleSignUp = async () => {
     if (!username || !password || !confirmPassword || !name || !email) {
       setError('All fields are required.');
@@ -48,8 +51,7 @@ const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence, s
 
     setIsLoading(true);
     try {
-      await registerUser(username, password, name, email); // Enviar nombre y email al servicio
-      // Si el registro fue exitoso, realiza el login automáticamente
+      await registerUser(username, password, name, email); 
       await handleLogin();
     } catch (err) {
       setError('Sign up failed. Please try again.');

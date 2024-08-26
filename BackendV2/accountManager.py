@@ -1,22 +1,24 @@
 from client import XMPPClient
 from utils import log_message
 
+# Clase utilizada para la creación y gestión de cuentas de usuario
 class AccountManager:
     def __init__(self, server: str, port: int) -> None:
         self.server = server
         self.port = port
         self.client = XMPPClient(server, port, '', '', '')
 
+
+    # Método para registrar una cuenta de usuario
     def register_account(self, username: str, password: str, name: str = '', email: str = '') -> None:
         self.client.connect_without_auth()
-        # Crea la solicitud de registro con campos adicionales para nombre y email
         register_request = (
             f"<iq type='set' id='reg1'>"
             f"<query xmlns='jabber:iq:register'>"
             f"<username>{username}</username>"
             f"<password>{password}</password>"
-            f"<name>{name}</name>"  # Campo adicional para el nombre
-            f"<email>{email}</email>"  # Campo adicional para el email
+            f"<name>{name}</name>"  
+            f"<email>{email}</email>" 
             f"</query>"
             f"</iq>"
         )
@@ -29,18 +31,20 @@ class AccountManager:
         self.client.disconnect()
 
 
+    # Método para iniciar sesión en una cuenta de usuario
     def login(self, username: str, password: str) -> None:
         self.client.username = username
         self.client.password = password
         self.client.connect()
-
-        # Send presence to server
         self.client.send("<presence><status>Online</status></presence>")
         
 
+    # Método para cerrar sesión en una cuenta de usuario
     def logout(self) -> None:
         self.client.disconnect()
 
+
+    # Método para eliminar una cuenta de usuario
     def delete_account(self) -> None:
         self.client.send("<iq type='set' id='delete1'><query xmlns='jabber:iq:register'><remove/></query></iq>")
         self.client.receive()

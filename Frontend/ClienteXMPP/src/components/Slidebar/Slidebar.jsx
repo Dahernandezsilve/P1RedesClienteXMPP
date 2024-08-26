@@ -3,18 +3,20 @@ import './Slidebar.css';
 import Header from '@components/Header';
 import { addContact, updatePresence, acceptSubscription } from '@services/xmppService';
 
-const defaultProfileImage = './usuario.png';
-const notificationSound = new Audio('./popSound.mp3');
+const defaultProfileImage = './usuario.png'; // Ruta de la imagen predeterminada
+const notificationSound = new Audio('./popSound.mp3'); // Ruta del archivo de sonido de notificación
 
+// Componente para la barra lateral con la lista de contactos
 const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
-  const [newContact, setNewContact] = useState(''); 
-  const [customMessage, setCustomMessage] = useState(''); 
-  const [isPresenceMenuOpen, setIsPresenceMenuOpen] = useState(false);
-  const [presenceMessage, setPresenceMessage] = useState('unknown'); 
-  const [status, setStatus] = useState(''); 
-  const [requests, setSubscriptionRequests] = useState([]);
-  const [addedJIDs, setAddedJIDs] = useState(new Set());
+  const [newContact, setNewContact] = useState(''); // Estado para el nombre de usuario del nuevo contacto
+  const [customMessage, setCustomMessage] = useState(''); // Estado para el mensaje personalizado
+  const [isPresenceMenuOpen, setIsPresenceMenuOpen] = useState(false); // Estado para mostrar/ocultar el menú de presencia
+  const [presenceMessage, setPresenceMessage] = useState('unknown'); // Estado para el mensaje de presencia
+  const [status, setStatus] = useState(''); // Estado para el estado personalizado
+  const [requests, setSubscriptionRequests] = useState([]); // Estado para las solicitudes de suscripción
+  const [addedJIDs, setAddedJIDs] = useState(new Set()); // Estado para los JIDs agregados
 
+  // Función para manejar la adición de un nuevo contacto
   const handleAddContact = () => {
     if (newContact.trim()) {
       addContact(newContact, customMessage); 
@@ -25,10 +27,12 @@ const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
     }
   };
 
+  // Función para mostrar/ocultar el menú de presencia
   const handleTogglePresenceMenu = () => {
     setIsPresenceMenuOpen(!isPresenceMenuOpen);
   };
 
+  // Función para manejar el cambio de presencia
   const handlePresenceChange = (message) => {
     setPresenceMessage(message);
     updatePresence(message, status);
@@ -44,6 +48,7 @@ const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
     }
   }, [unreadMessages]);
 
+  // Efecto para manejar las solicitudes de suscripción
   useEffect(() => {
     Object.values(presence).forEach((pres) => {
       if (pres.type === 'subscribe' && !addedJIDs.has(pres.from)) {
@@ -56,6 +61,7 @@ const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
     });
   }, [presence]);
 
+  // Función para aceptar una solicitud de suscripción
   const handleAcceptRequest = (request) => {
     acceptSubscription(request.from); // Esta función debe implementar la lógica para aceptar
     setSubscriptionRequests((prevRequests) =>

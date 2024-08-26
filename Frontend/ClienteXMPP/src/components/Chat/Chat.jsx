@@ -8,34 +8,38 @@ import ModalCreateGroups from '@components/ModalCreateGroups';
 import { showAllUsers, discoverGroups, createGroup } from '../../services/xmppService';
 import { deleteAcount } from '../../services/xmppService';
 
+// Componente Chat que muestra la interfaz de chat
 const Chat = ({ user, messages, contacts, usersList, presence, messageHistories, setMessageHistories, groupsList }) => {
-  const [message, setMessage] = useState('');
-  const [recipient, setRecipient] = useState('');
-  const [selectedContact, setSelectedContact] = useState('');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalGroupsOpen, setModalGroupsOpen] = useState(false);
-  const [processedMessageIds, setProcessedMessageIds] = useState(new Set()); 
-  const [unreadMessages, setUnreadMessages] = useState({});
-  const [hasFetchedUsers, setHasFetchedUsers] = useState(false);
-  const [hasFetchedGroups, setHasFetchedGroups] = useState(false);
-  const [file, setFile] = useState(null); 
-  const [modalCreateGroupOpen, setModalCreateGroupOpen] = useState(false);
+  const [message, setMessage] = useState(''); // Estado para el mensaje actual
+  const [recipient, setRecipient] = useState(''); // Estado para el destinatario del mensaje
+  const [selectedContact, setSelectedContact] = useState(''); // Estado para el contacto seleccionado
+  const [modalOpen, setModalOpen] = useState(false); // Estado para mostrar/ocultar el modal
+  const [modalGroupsOpen, setModalGroupsOpen] = useState(false); // Estado para mostrar/ocultar el modal de grupos
+  const [processedMessageIds, setProcessedMessageIds] = useState(new Set());  // Estado para almacenar los IDs de los mensajes procesados
+  const [unreadMessages, setUnreadMessages] = useState({});   // Estado para almacenar los mensajes no leídos
+  const [hasFetchedUsers, setHasFetchedUsers] = useState(false); // Estado para saber si se han obtenido los usuarios
+  const [hasFetchedGroups, setHasFetchedGroups] = useState(false);  // Estado para saber si se han obtenido los grupos
+  const [file, setFile] = useState(null);  // Estado para almacenar el archivo seleccionado
+  const [modalCreateGroupOpen, setModalCreateGroupOpen] = useState(false); // Estado para mostrar/ocultar el modal de creación de grupo
 
+
+  // Función para abrir el modal de creación de grupo
   const openModalCreateGroup = () => {
     setModalCreateGroupOpen(true);
   };
   
+
+  // Función para cerrar el modal de creación de grupo
   const closeModalCreateGroup = () => {
     setModalCreateGroupOpen(false);
   };
 
+
+  // Función para crear un grupo
   const handleCreateGroup = (groupName, groupDescription) => {
-    // Aquí llamas a la función que creará el grupo en tu servicio XMPP.
-    // Puedes crear una función `createGroup` en tu `xmppService`.
     createGroup(groupName, groupDescription)
       .then(() => {
-        // Actualizar la lista de grupos o realizar otras acciones necesarias
-        discoverGroups(); // para actualizar la lista de grupos después de crear uno nuevo
+        discoverGroups(); 
       })
       .catch((error) => {
         console.error('Failed to create group:', error);
@@ -43,7 +47,7 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
   };
   
 
-  
+  // Función para dar formato al nombre del archivo
   const formatFileName = (fileName) => {
     if (fileName.length > 19) {
       return `${fileName.slice(0, 16)}...`;
@@ -51,6 +55,8 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
     return fileName;
   };
 
+
+  // Función para enviar un mensaje
   const handleSend = () => {
     if (message.trim() && recipient.trim()) {
       const newMessage = {
@@ -73,13 +79,18 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
     }
   };
 
+
+  // Función para manejar el cambio de archivo
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
+
+  // Función para enviar un archivo
   const handleFileSend = () => {
     if (file && recipient.trim()) {
-      sendFile(recipient, file).then(() => {
+        console.log("print recipient:", recipient);
+        sendFile(recipient, file).then(() => {
         console.log('File sent successfully');
         setFile(null); // Limpiar el archivo después de enviarlo
       }).catch((error) => {
@@ -90,6 +101,7 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
     }
   };
 
+  // Función para eliminar la cuenta
   const deleteAccount = async () => {
     try {
       await deleteAcount();
@@ -99,6 +111,7 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
     }
   };
 
+  // Función para abrir el modal de usuarios
   const openModal = () => {
     if (!hasFetchedUsers) {
       showAllUsers();
@@ -107,29 +120,34 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
     setModalOpen(true);
   };
 
+  // Función para cerrar el modal de usuarios
   const closeModal = () => {
     setModalOpen(false);
   };
 
+  // Función para abrir el modal de grupos
   const openModalGroups = () => {
     discoverGroups();
     setModalGroupsOpen(true);
   };
 
+  // Función para cerrar el modal de grupos
   const closeModalGroups = () => {
     setModalGroupsOpen(false);
   };
 
+  // Función para unirse a un grupo
   const handleJoinGroup = (group) => {
     joinGroup(group);
     setModalGroupsOpen(false);
   };
 
-
+  // Función para actualizar la presencia
   const handleLogout = () => {
     window.location.reload();
   };
 
+  // Función para seleccionar un contacto
   const handleSelectContact = (contact) => {
     setSelectedContact(contact);
     setRecipient(contact);
@@ -139,6 +157,7 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
     }));
   };
 
+  // Función para procesar los mensajes
   useEffect(() => {
     if (messages.length > 0) {
       const newMessages = messages.filter((msg) => {
@@ -151,6 +170,7 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
       });
 
       if (newMessages.length > 0) {
+        // Actualizar el historial de mensajes
         setMessageHistories((prevHistories) => {
           const updatedHistories = { ...prevHistories };
           newMessages.forEach((msg) => {
@@ -176,12 +196,14 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
         return updatedHistories;
       });
 
+        // Actualizar los IDs de los mensajes procesados
         setProcessedMessageIds((prevIds) => {
           const updatedIds = new Set(prevIds);
           newMessages.forEach((msg) => updatedIds.add(msg.id_message));
           return updatedIds;
         });
 
+        // Actualizar los mensajes no leídos
         setUnreadMessages((prevUnreadMessages) => {
           const updatedUnreadMessages = { ...prevUnreadMessages };
           newMessages.forEach((msg) => {
@@ -204,10 +226,12 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
     console.log('Updated messages:', messages);
   }, [messages, selectedContact, processedMessageIds]);
 
+  // Función para actualizar la presencia
   useEffect(() => {
     console.log('Updated presence:', presence);
   }, [presence]);
 
+  // Función para manejar el evento de tecla presionada
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -216,6 +240,7 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
     }
   };
 
+  // Función para renderizar el contenido del mensaje
   const renderMessageContent = (text) => {
     const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
     const imageExtensions = /\.(jpg|jpeg|png|gif|bmp|webp)$/i;
@@ -227,15 +252,15 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
         if (urlPattern.test(part)) {
           const isImage = imageExtensions.test(part);
           const isPdf = pdfExtension.test(part);
-          return isImage ? (
+          return isImage ? ( // Si es una imagen, mostrarla
             <a key={index} href={part} target="_blank" rel="noopener noreferrer">
               <img src={part} alt={`Image ${index}`} style={{ maxWidth: '50%', maxHeight: '100px', margin: '10px 0', cursor: 'pointer', borderRadius: '10px' }} />
             </a>
-          ) : isPdf ? (
+          ) : isPdf ? ( // Si es un PDF, mostrar la imagen del PDF
             <a key={index} href={part} target="_blank" rel="noopener noreferrer">
               <img src={pdfImage} alt="PDF" style={{ maxWidth: '40px', cursor: 'pointer' }} />
             </a>
-          ) : (
+          ) : ( // Si es un enlace, mostrarlo
             <a key={index} href={part} target="_blank" rel="noopener noreferrer">
               {part}
             </a>
@@ -251,18 +276,21 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
     return text;
   };
 
-    const messagesEndRef = useRef(null);
+  // Referencia para el scroll al final de la lista de mensajes  
+  const messagesEndRef = useRef(null);
 
-    const scrollToBottom = () => {
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
-    };
+  // Función para hacer scroll al final de la lista de mensajes
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
   
-    useEffect(() => {
-      scrollToBottom();
-    }, [selectedContact, messageHistories]);
-  
+  // Efecto para hacer scroll al final de la lista de mensajes
+  useEffect(() => {
+    scrollToBottom();
+  }, [selectedContact, messageHistories]);
+
 
   return (
     <div className="chat-container">
