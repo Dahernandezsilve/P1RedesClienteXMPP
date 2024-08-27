@@ -4,7 +4,7 @@ let loginSocket; // Variable para almacenar la conexión WebSocket
 const processedMessageIds = new Set(); // Conjunto para almacenar los ID de mensajes procesados
 
 // Función para conectar al servidor XMPP
-export const connectXmpp = (username, password, setMessages, setContacts, setUsersList, setPresence, setMessageHistories, setGroupsList, setRequests) => {
+export const connectXmpp = (username, password, setMessages, setContacts, setUsersList, setPresence, setMessageHistories, setGroupsList, setRequests, setLogout) => {
     return new Promise((resolve, reject) => {
         loginSocket = new WebSocket(`${WS_URL}/ws/${username}/${password}`);
 
@@ -101,6 +101,9 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                     });
                 });
 
+            } else if (message.action === "logoutAccept") { // Cerrar sesion
+                console.log('Logout accepted:', message.action);
+                setLogout(true);
             } else if (message.message && message.from) { // Manejar los mensajes de chat
                 const isGroup = message.from.includes('@conference');
 
@@ -159,6 +162,14 @@ export const createGroup = (groupName, groupDescription) => {
         loginSocket.send(JSON.stringify(request));
     } else {
         console.error('WebSocket is not open. Unable to create group.');
+    }
+};
+
+export const handlogout = () => {
+    if (loginSocket && loginSocket.readyState === WebSocket.OPEN) {
+        const request = { action: "logout" };
+        loginSocket.send(JSON.stringify(request));
+        loginSocket.close();
     }
 };
 

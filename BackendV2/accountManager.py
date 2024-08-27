@@ -43,6 +43,10 @@ class AccountManager:
     def logout(self) -> None:
         self.client.disconnect()
 
+    async def logClose(self) -> None:
+        self.client.send("</stream:stream>")
+        self.client.disconnect()
+
 
     # Método para eliminar una cuenta de usuario
     def delete_account(self) -> None:

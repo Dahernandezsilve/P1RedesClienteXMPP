@@ -106,6 +106,14 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     error_message = {"status": "error", "message": f"Failed to create group chat: {str(e)}"}
                     await websocket.send_text(json.dumps(error_message))
 
+            elif message["action"] == "logout": # Cerrar sesion
+                try:
+                    await account_manager.logClose()
+                    response = {"status": "success", "action": "logoutAccept"}
+                except Exception as e:
+                    error_message = {"status": "error", "message": f"Failed to logout: {str(e)}"}
+                    await websocket.send_text(json.dumps(error_message))
+
             elif message["action"] == "add_contact": # Agregar contacto
                 try:
                     contact_username = message["contact_username"]

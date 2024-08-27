@@ -4,7 +4,7 @@ import Loader from '@components/Loader';
 import './Login.css';
 
 // Componente para el inicio de sesión y registro de usuarios
-const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence, setMessageHistories, setGroupsList, setRequests }) => {
+const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence, setMessageHistories, setGroupsList, setRequests, setLogout }) => {
   const [username, setUsername] = useState(''); // Estado para el nombre de usuario
   const [password, setPassword] = useState(''); // Estado para la contraseña
   const [confirmPassword, setConfirmPassword] = useState(''); // Estado para confirmar la contraseña
@@ -23,7 +23,7 @@ const Login = ({ setUser, setMessages, setContacts, setUsersList, setPresence, s
 
     setIsLoading(true);
     try {
-      const response = await connectXmpp(username, password, setMessages, setContacts, setUsersList, setPresence, setMessageHistories, setGroupsList, setRequests);
+      const response = await connectXmpp(username, password, setMessages, setContacts, setUsersList, setPresence, setMessageHistories, setGroupsList, setRequests, setLogout);
       console.log('Login response:', response);
       if (response.success) {
         setUser(username);

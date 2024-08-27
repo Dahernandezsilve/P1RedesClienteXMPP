@@ -5,11 +5,11 @@ import Slidebar from '@components/Slidebar';
 import Modal from '@components/Modal';
 import ModalGroups from '@components/ModalGroups';
 import ModalCreateGroups from '@components/ModalCreateGroups';
-import { showAllUsers, discoverGroups, createGroup } from '../../services/xmppService';
+import { showAllUsers, discoverGroups, createGroup, handlogout } from '../../services/xmppService';
 import { deleteAcount } from '../../services/xmppService';
 
 // Componente Chat que muestra la interfaz de chat
-const Chat = ({ user, messages, contacts, usersList, presence, messageHistories, setMessageHistories, groupsList, requests }) => {
+const Chat = ({ user, messages, contacts, usersList, presence, messageHistories, setMessageHistories, groupsList, requests, logout }) => {
   const [message, setMessage] = useState(''); // Estado para el mensaje actual
   const [recipient, setRecipient] = useState(''); // Estado para el destinatario del mensaje
   const [selectedContact, setSelectedContact] = useState(''); // Estado para el contacto seleccionado
@@ -142,10 +142,12 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
     setModalGroupsOpen(false);
   };
 
-  // Función para actualizar la presencia
+
   const handleLogout = () => {
+    handlogout();
     window.location.reload();
   };
+
 
   // Función para seleccionar un contacto
   const handleSelectContact = (contact) => {
