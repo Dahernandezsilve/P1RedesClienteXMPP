@@ -85,6 +85,7 @@ class XMPPClient:
 
     # Método para enviar un ping al servidor cada 60 segundos (mantener la conexión activa)
     async def send_ping(self):
+        await asyncio.sleep(30)
         while self.is_connected():
             self.send("<iq type='get' id='ping1'><ping xmlns='urn:xmpp:ping'/></iq>")
             await asyncio.sleep(60)  

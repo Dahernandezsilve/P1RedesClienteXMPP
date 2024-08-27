@@ -9,7 +9,7 @@ import { showAllUsers, discoverGroups, createGroup } from '../../services/xmppSe
 import { deleteAcount } from '../../services/xmppService';
 
 // Componente Chat que muestra la interfaz de chat
-const Chat = ({ user, messages, contacts, usersList, presence, messageHistories, setMessageHistories, groupsList }) => {
+const Chat = ({ user, messages, contacts, usersList, presence, messageHistories, setMessageHistories, groupsList, requests }) => {
   const [message, setMessage] = useState(''); // Estado para el mensaje actual
   const [recipient, setRecipient] = useState(''); // Estado para el destinatario del mensaje
   const [selectedContact, setSelectedContact] = useState(''); // Estado para el contacto seleccionado
@@ -231,6 +231,10 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
     console.log('Updated presence:', presence);
   }, [presence]);
 
+  useEffect(() => {
+    console.log('Updated request:', requests);
+  }, [requests]);
+
   // Función para manejar el evento de tecla presionada
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
@@ -294,7 +298,7 @@ const Chat = ({ user, messages, contacts, usersList, presence, messageHistories,
 
   return (
     <div className="chat-container">
-      <Slidebar contacts={contacts} onSelectContact={handleSelectContact} presence={presence} unreadMessages={unreadMessages}/>
+      <Slidebar contacts={contacts} onSelectContact={handleSelectContact} presence={presence} requestUser={requests} unreadMessages={unreadMessages}/>
       <div className="chat-content">
         <div className="chat-header">
           <h2>{selectedContact ? selectedContact.split('@')[0] : 'Select a Contact'}'s Chat</h2>

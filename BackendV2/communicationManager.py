@@ -116,7 +116,7 @@ class CommunicationManager:
     def accept_subscription(self, from_jid: str) -> None:
         accept_subscription_query = f"<presence to='{from_jid}' type='subscribed'/>"
         self.client.send(accept_subscription_query)
-        
+
 
     # Método para unirse a un chat grupal
     async def join_group_chat(self, jid: str) -> None:

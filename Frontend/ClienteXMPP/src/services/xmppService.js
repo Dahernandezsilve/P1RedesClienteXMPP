@@ -4,7 +4,7 @@ let loginSocket; // Variable para almacenar la conexión WebSocket
 const processedMessageIds = new Set(); // Conjunto para almacenar los ID de mensajes procesados
 
 // Función para conectar al servidor XMPP
-export const connectXmpp = (username, password, setMessages, setContacts, setUsersList, setPresence, setMessageHistories, setGroupsList) => {
+export const connectXmpp = (username, password, setMessages, setContacts, setUsersList, setPresence, setMessageHistories, setGroupsList, setRequests) => {
     return new Promise((resolve, reject) => {
         loginSocket = new WebSocket(`${WS_URL}/ws/${username}/${password}`);
 
@@ -56,10 +56,17 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                 }
             } else if (message.action === "presence_update") { // Manejar la actualización de presencia
                 console.log('Presence update received:', message.presence);
-                setPresence(prevPresence => ({
-                    ...prevPresence,
-                    [message.presence.from.split('/')[0]]: message.presence
-                }));
+                if (message.presence.type === 'subscribe') {   // Almacena la solicitud de suscripción en `requests`                  
+                    setRequests(prevRequests => ({
+                        ...prevRequests,
+                        [message.presence.from.split('/')[0]]: message.presence
+                    }));
+                } else { // Actualiza la presencia en el estado `presence`
+                    setPresence(prevPresence => ({
+                        ...prevPresence,
+                        [message.presence.from.split('/')[0]]: message.presence
+                    }));
+                }
             } else if (Array.isArray(message.root) && message.root.length > 0) {
                 message.root.forEach((rootItem) => {
                     if (Array.isArray(rootItem.message)) {
@@ -111,7 +118,12 @@ export const connectXmpp = (username, password, setMessages, setContacts, setUse
                 console.log('Message received:', message);
 
                 console.log('New group:', groupName);
-                setMessages((messages) => [...messages, newMessage]);
+                if (!processedMessageIds.has(newMessage.id_message)) {
+                    processedMessageIds.add(newMessage.id_message);
+                    setMessages((messages) => [...messages, newMessage]);
+                } else {
+                    console.log('Message already processed, skipping:', newMessage.id_message);
+                }
             } else {
                 console.log('Message received:', message);
                 console.warn('No valid messages received');

@@ -7,7 +7,7 @@ const defaultProfileImage = './usuario.png'; // Ruta de la imagen predeterminada
 const notificationSound = new Audio('./popSound.mp3'); // Ruta del archivo de sonido de notificación
 
 // Componente para la barra lateral con la lista de contactos
-const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
+const Slidebar = ({ contacts, onSelectContact, presence, requestUser, unreadMessages }) => {
   const [newContact, setNewContact] = useState(''); // Estado para el nombre de usuario del nuevo contacto
   const [customMessage, setCustomMessage] = useState(''); // Estado para el mensaje personalizado
   const [isPresenceMenuOpen, setIsPresenceMenuOpen] = useState(false); // Estado para mostrar/ocultar el menú de presencia
@@ -50,7 +50,7 @@ const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
 
   // Efecto para manejar las solicitudes de suscripción
   useEffect(() => {
-    Object.values(presence).forEach((pres) => {
+    Object.values(requestUser).forEach((pres) => {
       if (pres.type === 'subscribe' && !addedJIDs.has(pres.from)) {
         setAddedJIDs((prevJIDs) => new Set(prevJIDs).add(pres.from));
         setSubscriptionRequests((prevRequests) => [
@@ -59,7 +59,11 @@ const Slidebar = ({ contacts, onSelectContact, presence, unreadMessages }) => {
         ]);
       }
     });
-  }, [presence]);
+  }, [requestUser]);
+
+  useEffect(() => {
+    console.log('Subscription Requests:', requests);
+  }, [requests]);
 
   // Función para aceptar una solicitud de suscripción
   const handleAcceptRequest = (request) => {

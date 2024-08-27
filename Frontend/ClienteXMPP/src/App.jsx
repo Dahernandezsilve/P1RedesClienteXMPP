@@ -11,6 +11,8 @@ const App = () => {
   const [presence, setPresence] = useState({}); // Estado para la presencia de los usuarios
   const [messageHistories, setMessageHistories] = useState({}); // Estado para los historiales de mensajes
   const [groupsList, setGroupsList] = useState([]); // Estado para la lista de grupos
+  const [requests, setRequests] = useState([]); // Estado para las solicitudes de suscripción
+
   return (
     <div>
       {user ? ( // Mostrar el chat si el usuario está autenticado
@@ -23,6 +25,7 @@ const App = () => {
           setMessageHistories={setMessageHistories}
           messageHistories={messageHistories}
           groupsList={groupsList}
+          requests={requests}
         />
       ) : ( // Mostrar el inicio de sesión si el usuario no está autenticado
         <Login // Componente para el inicio de sesión
@@ -33,6 +36,7 @@ const App = () => {
           setPresence={setPresence}
           setMessageHistories={setMessageHistories}
           setGroupsList={setGroupsList}
+          setRequests={setRequests}
         />
       )}
     </div>
