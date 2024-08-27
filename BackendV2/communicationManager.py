@@ -5,14 +5,16 @@ import re
 import json
 import asyncio
 import requests
+from accountManager import AccountManager
 
 
 # Clase para gestionar la comunicación con otros usuarios
 class CommunicationManager:
     # Inicializar la clase con el cliente XMPP y el WebSocket
-    def __init__(self, client: XMPPClient, websocket = None) -> None:
+    def __init__(self, client: XMPPClient, websocket = None, account_manager: AccountManager = None) -> None:
         self.client = client
         self.websocket = websocket
+        self.account_manager = account_manager
         self.bookmarksCM = {}
 
 

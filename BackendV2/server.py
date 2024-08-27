@@ -36,7 +36,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
         return
 
     clients[username] = account_manager.client
-    comm_manager = CommunicationManager(account_manager.client, websocket)
+    comm_manager = CommunicationManager(account_manager.client, websocket, account_manager=account_manager)
     message_handler = WebSocketMessageHandler(account_manager.client, comm_manager, websocket)
     
     try:
@@ -162,6 +162,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str, password: str)
                     await websocket.send_text(json.dumps(error_message))
 
         except WebSocketDisconnect:
+            account_manager.logout()
             break
         except Exception as e: # Manejar errores
             print(f"Error in websocket communication: {e}")

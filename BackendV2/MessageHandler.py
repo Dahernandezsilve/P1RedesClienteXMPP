@@ -22,22 +22,25 @@ class MessageHandler:
 
     # Método para recibir mensajes del servidor XMPP
     async def receive_messages(self):
-        while True:
-            try:
-                if self.client.bufferMessagesToClean:
-                    # Procesar mensajes almacenados en bufferMessagesToClean
-                    for buffered_message in self.client.bufferMessagesToClean:
-                        await self.message_queue.put(buffered_message)
-                    self.client.bufferMessagesToClean.clear()
-                    message = await asyncio.to_thread(self.client.receive)
-                if message:
-                    await self.message_queue.put(message)
-                    await self.process_messages()
-                else:
-                    await asyncio.sleep(1)  # Esperar antes de volver a intentar si no hay datos
-            except Exception as e:
-                print(f"Error receiving messages: {e}")
-                break
+        try:
+            while True:
+                try:
+                    if self.client.bufferMessagesToClean:
+                        # Procesar mensajes almacenados en bufferMessagesToClean
+                        for buffered_message in self.client.bufferMessagesToClean:
+                            await self.message_queue.put(buffered_message)
+                        self.client.bufferMessagesToClean.clear()
+                        message = await asyncio.to_thread(self.client.receive)
+                    if message:
+                        await self.message_queue.put(message)
+                        await self.process_messages()
+                    else:
+                        await asyncio.sleep(1)  # Esperar antes de volver a intentar si no hay datos
+                except Exception as e:
+                    print(f"Error receiving messages: {e}")
+                    break
+        finally:
+            self.comm_manager.account_manager.logout()
 
 
     # Método para procesar mensajes en la cola
